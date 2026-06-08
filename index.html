@@ -20,10 +20,17 @@
         <a href="#mood">情绪记录</a>
         <a href="#map">岛屿地图</a>
         <a href="#method">心理技术</a>
+        <a href="#help">获得帮助</a>
         <a href="tests.html">心理测试</a>
       </nav>
       <a class="nav-link" href="#enter">登岛</a>
     </header>
+    <nav class="mobile-quick-nav" aria-label="快捷导航">
+      <a href="#mood">记录</a>
+      <a href="tests.html">测试</a>
+      <a href="#companion">陪伴</a>
+      <a href="#help">帮助</a>
+    </nav>
 
     <main id="top">
       <section class="hero" aria-labelledby="hero-title">
@@ -32,10 +39,11 @@
         <div class="hero-copy">
           <p class="eyebrow">ANIME MENTAL SANCTUARY</p>
           <h1 id="hero-title">心灵岛屿</h1>
-          <p class="hero-text">一个帮助你记录情绪、疗愈内心、寻找同频伙伴的数字心灵岛。</p>
+          <p class="hero-text">先看见状态，再记录潮汐；需要时，灯塔会提醒你向真实的人求助。</p>
           <div class="hero-actions">
-            <a class="hero-cta" id="enter" href="#guide">开始探索</a>
-            <a class="hero-cta secondary" href="tests.html">进入心理测试</a>
+            <a class="hero-cta" id="enter" href="tests.html">先做一次自评</a>
+            <a class="hero-cta secondary" href="#mood">记录今日心情</a>
+            <a class="hero-cta secondary" href="#help">查看求助灯塔</a>
           </div>
         </div>
         <div class="scroll-note">向下探索</div>
@@ -47,6 +55,12 @@
         <p>
           我们把心理支持做成一场温柔的登岛：情绪像海，念头像风，咨询像远处的灯塔。你不需要立刻解释清楚一切，只需要先抵达这里。
         </p>
+        <div class="path-strip" aria-label="推荐使用路径">
+          <a href="tests.html"><span>01</span>自我测评</a>
+          <a href="#mood"><span>02</span>情绪记录</a>
+          <a href="#companion"><span>03</span>温柔陪伴</a>
+          <a href="#help"><span>04</span>必要时求助</a>
+        </div>
       </section>
 
       <section class="guide" id="guide" aria-labelledby="guide-title">
@@ -120,9 +134,11 @@
             <button class="mood-button" type="button" data-mood="焦虑" data-energy="4">焦虑</button>
           </div>
           <textarea id="mood-note" rows="5" placeholder="写下今天发生了什么，或者只是留一句给自己的话。"></textarea>
+          <p class="form-hint">内容只保存在你的浏览器本地；清理浏览器数据后可能会消失。</p>
           <button class="solid-button" type="button" id="save-mood">保存情绪日记</button>
           <div class="mood-chart" id="mood-chart" aria-label="最近情绪曲线"></div>
           <p class="ai-insight" id="ai-insight">保存后，这里会出现你的情绪趋势分析。</p>
+          <div class="mood-history" id="mood-history" aria-live="polite"></div>
         </div>
       </section>
 
@@ -136,7 +152,7 @@
           <a class="map-point forest" href="#method"><span>森林疗愈区</span></a>
           <a class="map-point plaza" href="#community"><span>星光广场</span></a>
           <a class="map-point garden" href="tests.html"><span>梦境花园</span></a>
-          <a class="map-point lighthouse" href="#help"><span>回忆灯塔</span></a>
+          <a class="map-point lighthouse" href="#help"><span>求助灯塔</span></a>
           <a class="map-point temple" href="#companion"><span>心灵神殿</span></a>
         </div>
       </section>
@@ -154,8 +170,8 @@
         </article>
         <article>
           <span>灯塔</span>
-          <h3>咨询预约</h3>
-          <p>当你需要更稳定的陪伴，找到合适的咨询师与会谈方向。</p>
+          <h3>求助准备</h3>
+          <p>当你需要更稳定的陪伴，先整理主题、状态和下一步可以联系的人。</p>
         </article>
       </section>
 
@@ -175,7 +191,7 @@
           </div>
           <div>
             <strong>灯塔咨询</strong>
-            <p>根据主题、风格和时间匹配咨询支持，减少求助前的犹豫。</p>
+            <p>本站暂不提供真实预约；你可以先完成自评，再带着结果去寻找学校、医院或正规咨询资源。</p>
           </div>
         </div>
       </section>
@@ -184,9 +200,10 @@
         <div class="companion-copy">
           <p class="section-label">07 / AI COMPANION</p>
           <h2 id="companion-title">岛上精灵，会先接住你的疲惫。</h2>
-          <p>这是一个前端原型陪伴功能，会根据关键词给出温柔回应；未来可接入真实 AI 对话。</p>
+          <p>这是一个前端原型陪伴功能，会根据关键词给出温柔回应。它不能替代心理咨询、医学诊断或紧急帮助。</p>
         </div>
         <div class="chat-box">
+          <p class="safety-note">如果你正在经历强烈危险感、伤害自己的想法，或担心自己无法保持安全，请立刻联系当地紧急电话、医院急诊，或身边可信任的人。</p>
           <div class="sprite-card">
             <span class="sprite-orb">萤</span>
             <div>
@@ -208,6 +225,7 @@
         </div>
         <div class="bottle-panel">
           <textarea id="bottle-text" rows="4" placeholder="匿名写下今天想被听见的一句话。"></textarea>
+          <p class="form-hint dark">漂流瓶也只会保存在本机浏览器中，不会发送到服务器。</p>
           <button class="solid-button" type="button" id="send-bottle">投向星光广场</button>
           <div class="bottle-list" id="bottle-list"></div>
         </div>
@@ -220,15 +238,32 @@
           心灵岛诞生于一个焦虑的夜晚。我们希望每个人都能拥有一片属于自己的精神栖息地：在这里记录情绪，理解自己，也在需要时找到同频的陪伴。
         </p>
         <p class="section-label">10 / HELP</p>
-        <h2 id="help-title">想获得帮助吗？</h2>
+        <h2 id="help-title">当你想获得帮助，可以先点亮这座灯塔。</h2>
+        <p class="story-text">
+          心灵岛屿目前是自助记录与状态整理工具，不提供真实咨询预约。它可以帮你把感受说清楚一点，也提醒你在需要时把自己交给真实、可靠的支持系统。
+        </p>
+        <div class="help-grid">
+          <article class="help-card">
+            <span>适合寻求咨询</span>
+            <p>情绪低落、焦虑、失眠、关系压力或自我伤害想法持续影响生活时，不建议只靠自己撑过去。</p>
+          </article>
+          <article class="help-card">
+            <span>求助前可准备</span>
+            <p>最近持续多久、影响了什么、最想解决的问题、身边是否有人能陪你一起联系专业资源。</p>
+          </article>
+          <article class="help-card urgent">
+            <span>紧急情况</span>
+            <p>如果你担心自己或他人马上有危险，请优先联系当地紧急电话、医院急诊或身边可信任的人。</p>
+          </article>
+        </div>
         <div class="help-actions">
           <a class="action-card" href="tests.html">
             <span>心理测试</span>
             <strong>进入站内测试中心</strong>
           </a>
-          <a class="action-card" href="tests.html#social-tide">
-            <span>预约咨询</span>
-            <strong>先完成一份状态自评</strong>
+          <a class="action-card" href="tests.html#stress-storm">
+            <span>灯塔准备</span>
+            <strong>先完成一份状态自评，再寻找正规支持</strong>
           </a>
         </div>
       </section>

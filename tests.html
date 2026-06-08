@@ -18,10 +18,17 @@
         <a href="index.html#about">关于岛屿</a>
         <a href="index.html#method">心理技术</a>
         <a href="tests.html">心理测试</a>
+        <a href="index.html#mood">情绪记录</a>
         <a href="index.html#help">获得帮助</a>
       </nav>
       <a class="nav-link" href="index.html">首页</a>
     </header>
+    <nav class="mobile-quick-nav tests-mobile-nav" aria-label="快捷导航">
+      <a href="index.html#mood">记录</a>
+      <a href="tests.html">测试</a>
+      <a href="index.html#companion">陪伴</a>
+      <a href="index.html#help">帮助</a>
+    </nav>
 
     <main>
       <section class="tests-hero" aria-labelledby="tests-title">
@@ -31,6 +38,9 @@
           <p>
             参考常见高频心理测试入口，重新设计为心灵岛屿自己的原创题库与结果系统。测试用于自我了解，不作为医学诊断。
           </p>
+          <div class="notice-card light">
+            测试结果只是一份自我观察线索。如果结果让你担心，或状态已经影响睡眠、学习、工作与安全，请优先联系真实的人和正规专业资源。
+          </div>
         </div>
       </section>
 
@@ -46,6 +56,7 @@
             <p class="section-label">READY</p>
             <h2>从左侧选择一个测试。</h2>
             <p>每个测试 8 道题，约 2 分钟完成。结果会在本页生成，不会跳转到外部网站。</p>
+            <p class="form-hint">页面不会保存你的答案；刷新后需要重新作答。</p>
           </div>
 
           <article class="active-test" id="active-test" hidden>
@@ -59,6 +70,7 @@
               <div id="progress-bar"></div>
             </div>
             <form id="test-form"></form>
+            <p class="form-alert" id="test-alert" aria-live="polite"></p>
             <div class="test-controls">
               <button class="ghost-button" type="button" id="reset-test">重新选择</button>
               <button class="solid-button" type="button" id="show-result">查看结果</button>
@@ -74,6 +86,11 @@
               <small id="result-range"></small>
             </div>
             <div class="result-advice" id="result-advice"></div>
+            <div class="next-steps" aria-label="下一步建议">
+              <a href="index.html#mood">把结果写进情绪记录</a>
+              <a href="index.html#companion">和岛上精灵说几句</a>
+              <a href="index.html#help">查看求助灯塔</a>
+            </div>
             <div class="test-controls">
               <button class="ghost-button" type="button" id="retake-test">再测一次</button>
               <a class="solid-button" href="index.html#help">需要帮助</a>

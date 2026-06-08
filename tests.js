@@ -211,6 +211,14 @@ const empty = document.querySelector("#stage-empty");
 const active = document.querySelector("#active-test");
 const resultPanel = document.querySelector("#result-panel");
 const form = document.querySelector("#test-form");
+const testAlert = document.querySelector("#test-alert");
+
+function createElement(tag, className, text) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
 
 function getTest(id) {
   return tests.find((test) => test.id === id) || tests[0];
@@ -241,6 +249,7 @@ function startTest(id) {
   document.querySelector("#test-title").textContent = test.name;
   document.querySelector("#test-description").textContent = test.description;
   document.querySelector("#progress-bar").style.width = "0%";
+  testAlert.textContent = "";
   form.innerHTML = test.questions
     .map(
       (question, index) => `
@@ -285,13 +294,16 @@ function updateProgress() {
   const test = getTest(state.currentId);
   const percent = Math.round((answeredCount(test) / test.questions.length) * 100);
   document.querySelector("#progress-bar").style.width = `${percent}%`;
+  testAlert.textContent = "";
 }
 
 function showResult() {
   const test = getTest(state.currentId);
   const count = answeredCount(test);
   if (count < test.questions.length) {
-    const next = form.querySelector(`fieldset:nth-of-type(${count + 1})`);
+    const nextIndex = test.questions.findIndex((_question, index) => !form.querySelector(`input[name="q${index}"]:checked`));
+    const next = form.querySelector(`fieldset:nth-of-type(${nextIndex + 1})`);
+    testAlert.textContent = `还有 ${test.questions.length - count} 题没有选择。已经帮你跳到下一题。`;
     next?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
@@ -303,7 +315,9 @@ function showResult() {
   document.querySelector("#result-summary").textContent = result.summary;
   document.querySelector("#result-score").textContent = `${score} / 24`;
   document.querySelector("#result-range").textContent = test.name;
-  document.querySelector("#result-advice").innerHTML = result.advice.map((item) => `<p>${item}</p>`).join("");
+  const advice = document.querySelector("#result-advice");
+  const intro = createElement("p", "", "下一步可以从一件低门槛的小事开始：记录今天的状态、和可信任的人说一句，或在需要时寻找专业支持。");
+  advice.replaceChildren(intro, ...result.advice.map((item) => createElement("p", "", item)));
   resultPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 

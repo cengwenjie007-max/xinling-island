@@ -6,7 +6,9 @@ const defaultState = {
   badges: ["初次登岛"],
   quests: {},
   moods: [],
-  bottles: ["今天也许不完美，但我已经在靠岸。"]
+  bottles: ["今天也许不完美，但我已经在靠岸。"],
+  lastMoodRewardDate: "",
+  lastBottleRewardDate: ""
 };
 
 const state = loadState();
@@ -14,10 +16,23 @@ let selectedMood = { mood: "开心", energy: 8 };
 
 function loadState() {
   try {
-    return { ...defaultState, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    return normalizeState({ ...defaultState, ...(saved && typeof saved === "object" ? saved : {}) });
   } catch {
     return { ...defaultState };
   }
+}
+
+function normalizeState(nextState) {
+  return {
+    ...nextState,
+    soul: clamp(Number(nextState.soul ?? defaultState.soul), 0, 999),
+    energy: clamp(Number(nextState.energy ?? defaultState.energy), 1, 10),
+    badges: Array.isArray(nextState.badges) ? nextState.badges : [...defaultState.badges],
+    quests: nextState.quests && typeof nextState.quests === "object" ? nextState.quests : {},
+    moods: Array.isArray(nextState.moods) ? nextState.moods : [],
+    bottles: Array.isArray(nextState.bottles) ? nextState.bottles : [...defaultState.bottles]
+  };
 }
 
 function saveState() {
@@ -28,13 +43,29 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function createElement(tag, className, text) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
+
+function addSoul(amount) {
+  state.soul = clamp(Number(state.soul || 0) + amount, 0, 999);
+}
+
 function updateGrowth() {
   const level = Math.max(1, Math.floor(state.soul / 60) + 1);
   document.querySelector("#level-number").textContent = `Lv.${level}`;
   document.querySelector("#soul-value").textContent = state.soul;
   document.querySelector("#emotion-energy").textContent = state.energy;
   document.querySelector("#badge-count").textContent = state.badges.length;
-  document.querySelector("#badge-row").innerHTML = state.badges.map((badge) => `<span>${badge}</span>`).join("");
+  const badgeRow = document.querySelector("#badge-row");
+  badgeRow.replaceChildren(...state.badges.map((badge) => createElement("span", "", badge)));
 }
 
 function awardBadge(name) {
@@ -53,26 +84,51 @@ function renderMoodChart() {
   const chart = document.querySelector("#mood-chart");
   const recent = state.moods.slice(-7);
   if (!recent.length) {
-    chart.innerHTML = "<span>暂无记录</span>";
+    chart.replaceChildren(createElement("span", "", "暂无记录"));
     return;
   }
-  chart.innerHTML = recent
-    .map(
-      (entry) => `
-        <div class="mood-bar" style="height:${entry.energy * 10}%">
-          <span>${entry.mood}</span>
-        </div>
-      `
-    )
-    .join("");
+  chart.replaceChildren(
+    ...recent.map((entry) => {
+      const bar = createElement("div", "mood-bar");
+      bar.style.height = `${clamp(Number(entry.energy || 0), 1, 10) * 10}%`;
+      bar.append(createElement("span", "", entry.mood || "未命名"));
+      return bar;
+    })
+  );
+}
+
+function renderMoodHistory() {
+  const history = document.querySelector("#mood-history");
+  if (!history) return;
+  const recent = state.moods.slice(-3).reverse();
+  if (!recent.length) {
+    history.replaceChildren(createElement("p", "form-hint", "最近记录会显示在这里，方便你看见自己的情绪节律。"));
+    return;
+  }
+  const title = createElement("strong", "", "最近记录");
+  const list = createElement("div", "mood-note-list");
+  recent.forEach((entry) => {
+    const item = createElement("article");
+    const date = entry.date ? new Date(entry.date).toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" }) : "今天";
+    item.append(createElement("span", "", `${date} / ${entry.mood}`));
+    item.append(createElement("p", "", entry.note || "这一天只留下了一个情绪标记。"));
+    list.append(item);
+  });
+  history.replaceChildren(title, list);
 }
 
 function renderBottles() {
-  document.querySelector("#bottle-list").innerHTML = state.bottles
+  const list = document.querySelector("#bottle-list");
+  const items = state.bottles
     .slice(-4)
     .reverse()
-    .map((item) => `<article>${item}<span>抱抱你</span></article>`)
-    .join("");
+    .map((item) => {
+      const article = createElement("article");
+      article.append(document.createTextNode(item));
+      article.append(createElement("span", "", "抱抱你"));
+      return article;
+    });
+  list.replaceChildren(...items);
 }
 
 function insightForMoods() {
@@ -87,7 +143,7 @@ function insightForMoods() {
 document.querySelectorAll("[data-quest]").forEach((input) => {
   input.addEventListener("change", () => {
     state.quests[input.dataset.quest] = input.checked;
-    state.soul += input.checked ? 10 : -10;
+    addSoul(input.checked ? 10 : -10);
     if (Object.values(state.quests).filter(Boolean).length >= 3) awardBadge("完成新手任务");
     saveState();
     updateGrowth();
@@ -104,21 +160,33 @@ document.querySelectorAll(".mood-button").forEach((button) => {
 
 document.querySelector("#save-mood").addEventListener("click", () => {
   const note = document.querySelector("#mood-note");
+  const text = note.value.trim();
+  const insight = document.querySelector("#ai-insight");
+  if (!text) {
+    insight.textContent = "可以只写一句很短的话，比如“今天有点累”。给情绪一个名字，也是一种靠岸。";
+    note.focus();
+    return;
+  }
   state.moods.push({
     mood: selectedMood.mood,
     energy: selectedMood.energy,
-    note: note.value.trim(),
+    note: text.slice(0, 260),
     date: new Date().toISOString()
   });
   state.energy = selectedMood.energy;
-  state.soul += 15;
+  const today = todayKey();
+  if (state.lastMoodRewardDate !== today) {
+    addSoul(15);
+    state.lastMoodRewardDate = today;
+  }
   awardBadge("情绪记录者");
   if (state.moods.length >= 3) awardBadge("连续靠岸");
   note.value = "";
   saveState();
   updateGrowth();
   renderMoodChart();
-  document.querySelector("#ai-insight").textContent = insightForMoods();
+  renderMoodHistory();
+  insight.textContent = insightForMoods();
 });
 
 document.querySelector("#send-sprite").addEventListener("click", () => {
@@ -137,8 +205,12 @@ document.querySelector("#send-bottle").addEventListener("click", () => {
   const input = document.querySelector("#bottle-text");
   const text = input.value.trim();
   if (!text) return;
-  state.bottles.push(text);
-  state.soul += 8;
+  state.bottles.push(text.slice(0, 180));
+  const today = todayKey();
+  if (state.lastBottleRewardDate !== today) {
+    addSoul(8);
+    state.lastBottleRewardDate = today;
+  }
   awardBadge("星光漂流瓶");
   input.value = "";
   saveState();
@@ -149,5 +221,6 @@ document.querySelector("#send-bottle").addEventListener("click", () => {
 renderQuests();
 updateGrowth();
 renderMoodChart();
+renderMoodHistory();
 renderBottles();
 document.querySelector("#ai-insight").textContent = insightForMoods();
