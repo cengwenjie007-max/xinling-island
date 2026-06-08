@@ -14,6 +14,69 @@ const defaultState = {
 const state = loadState();
 let selectedMood = { mood: "开心", energy: 8 };
 
+const mapPlaces = {
+  pier: {
+    title: "海边码头",
+    status: "已点亮",
+    fit: "适合：第一次登岛、状态有点乱、想先做一件小事。",
+    action: "我能做什么：新手引导、今日心情打卡。",
+    unlock: "入口区域已开放。",
+    href: "#mood",
+    cta: "记录今日心情",
+    isUnlocked: () => true
+  },
+  forest: {
+    title: "森林疗愈区",
+    status: "已点亮",
+    fit: "适合：焦虑、疲惫、睡前、需要慢慢安静下来。",
+    action: "我能做什么：3 分钟呼吸、正念、身体扫描。",
+    unlock: "完成一次情绪记录后，森林会变得更明亮。",
+    href: "#method",
+    cta: "进入练习",
+    isUnlocked: () => state.moods.length >= 1
+  },
+  plaza: {
+    title: "星光广场",
+    status: "已点亮",
+    fit: "适合：想被听见、想轻轻回应别人、想留下匿名一句话。",
+    action: "我能做什么：漂流瓶、同频留言、温柔回应。",
+    unlock: "投递一只漂流瓶后，广场会记录你的星光。",
+    href: "#community",
+    cta: "投递漂流瓶",
+    isUnlocked: () => true
+  },
+  garden: {
+    title: "梦境花园",
+    status: "半开放",
+    fit: "适合：潜意识书写、梦境记录、整理反复出现的念头。",
+    action: "我能做什么：进入心理测试，完成一次深度自评。",
+    unlock: "完成一次心理测试后，可把结果写入情绪记录。",
+    href: "tests.html",
+    cta: "进入测试",
+    isUnlocked: () => true
+  },
+  lighthouse: {
+    title: "回忆灯塔",
+    status: "待点亮",
+    fit: "适合：回顾最近状态、整理成长档案、准备真实求助。",
+    action: "我能做什么：情绪回顾、成长档案、求助准备。",
+    unlock: "完成 3 次情绪记录后点亮灯塔。",
+    href: "#help",
+    cta: "查看求助灯塔",
+    isUnlocked: () => state.moods.length >= 3
+  },
+  temple: {
+    title: "心灵神殿",
+    status: "待点亮",
+    fit: "适合：心理测试、咨询准备、深度探索。",
+    action: "我能做什么：心理测试、咨询预约准备、与岛上精灵对话。",
+    unlock: "心灵值达到 80 或完成新手任务后点亮神殿。",
+    href: "tests.html",
+    cta: "进入深度探索",
+    isUnlocked: () => state.soul >= 80 || Object.values(state.quests).filter(Boolean).length >= 3
+  }
+};
+
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -66,6 +129,7 @@ function updateGrowth() {
   document.querySelector("#badge-count").textContent = state.badges.length;
   const badgeRow = document.querySelector("#badge-row");
   badgeRow.replaceChildren(...state.badges.map((badge) => createElement("span", "", badge)));
+  updateMapLocks();
 }
 
 function awardBadge(name) {
@@ -138,6 +202,35 @@ function insightForMoods() {
   if (average >= 7) return "最近的情绪能量偏明亮，可以趁状态好时保存一些让你恢复的习惯。";
   if (average >= 4) return "最近情绪有起伏，建议给自己安排一个低门槛休息动作，比如散步或早睡。";
   return "最近能量偏低，请先照顾睡眠、饮食和安全感，不要独自硬撑太久。";
+}
+
+function updateMapLocks() {
+  document.querySelectorAll("[data-place]").forEach((button) => {
+    const place = mapPlaces[button.dataset.place];
+    if (!place) return;
+    const unlocked = place.isUnlocked();
+    button.classList.toggle("locked", !unlocked);
+    button.classList.toggle("lit", unlocked);
+    button.setAttribute("aria-label", `${place.title}，${unlocked ? "已点亮" : "未完全点亮"}，点击查看功能卡片`);
+  });
+}
+
+function showMapPlace(placeId) {
+  const place = mapPlaces[placeId] || mapPlaces.pier;
+  const unlocked = place.isUnlocked();
+  document.querySelectorAll("[data-place]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.place === placeId);
+  });
+  document.querySelector("#map-detail-status").textContent = unlocked ? place.status : "未完全点亮";
+  document.querySelector("#map-detail-title").textContent = place.title;
+  document.querySelector("#map-detail-fit").textContent = place.fit;
+  document.querySelector("#map-detail-action").textContent = place.action;
+  document.querySelector("#map-detail-unlock").textContent = unlocked ? "当前可以进入。继续使用会让这片区域更明亮。" : place.unlock;
+  const link = document.querySelector("#map-detail-link");
+  link.textContent = place.cta;
+  link.href = place.href;
+  link.classList.toggle("disabled-link", !unlocked);
+  link.setAttribute("aria-disabled", String(!unlocked));
 }
 
 document.querySelectorAll("[data-quest]").forEach((input) => {
@@ -218,9 +311,15 @@ document.querySelector("#send-bottle").addEventListener("click", () => {
   renderBottles();
 });
 
+document.querySelectorAll("[data-place]").forEach((button) => {
+  button.addEventListener("click", () => showMapPlace(button.dataset.place));
+});
+
 renderQuests();
 updateGrowth();
 renderMoodChart();
 renderMoodHistory();
 renderBottles();
 document.querySelector("#ai-insight").textContent = insightForMoods();
+updateMapLocks();
+showMapPlace("pier");

@@ -146,14 +146,55 @@
         <div class="section-intro">
           <p class="section-label">05 / ISLAND MAP</p>
           <h2 id="map-title">在岛屿地图里探索不同的疗愈区域。</h2>
+          <p class="route-hint">今日岛屿路线：码头记录心情 → 森林呼吸练习 → 星光广场投递漂流瓶</p>
         </div>
-        <div class="map-board">
-          <a class="map-point pier" href="#mood"><span>海边码头</span></a>
-          <a class="map-point forest" href="#method"><span>森林疗愈区</span></a>
-          <a class="map-point plaza" href="#community"><span>星光广场</span></a>
-          <a class="map-point garden" href="tests.html"><span>梦境花园</span></a>
-          <a class="map-point lighthouse" href="#help"><span>求助灯塔</span></a>
-          <a class="map-point temple" href="#companion"><span>心灵神殿</span></a>
+        <div class="map-layout">
+          <div class="map-board" aria-label="可探索的心灵岛屿地图">
+            <div class="map-sea" aria-hidden="true"></div>
+            <div class="map-island-shape" aria-hidden="true">
+              <span class="map-lagoon"></span>
+              <span class="map-peak"></span>
+              <span class="map-beach"></span>
+            </div>
+            <button class="map-point pier" type="button" data-place="pier">
+              <span class="map-icon">⚓</span>
+              <strong>海边码头</strong>
+              <small>入口</small>
+            </button>
+            <button class="map-point forest" type="button" data-place="forest">
+              <span class="map-icon">✦</span>
+              <strong>森林疗愈区</strong>
+              <small>呼吸</small>
+            </button>
+            <button class="map-point plaza" type="button" data-place="plaza">
+              <span class="map-icon">✺</span>
+              <strong>星光广场</strong>
+              <small>同频</small>
+            </button>
+            <button class="map-point garden" type="button" data-place="garden">
+              <span class="map-icon">☾</span>
+              <strong>梦境花园</strong>
+              <small>书写</small>
+            </button>
+            <button class="map-point lighthouse" type="button" data-place="lighthouse">
+              <span class="map-icon">⌂</span>
+              <strong>回忆灯塔</strong>
+              <small>回顾</small>
+            </button>
+            <button class="map-point temple" type="button" data-place="temple">
+              <span class="map-icon">◇</span>
+              <strong>心灵神殿</strong>
+              <small>深探</small>
+            </button>
+          </div>
+          <aside class="map-detail" id="map-detail" aria-live="polite">
+            <p class="section-label" id="map-detail-status">已点亮</p>
+            <h3 id="map-detail-title">海边码头</h3>
+            <p id="map-detail-fit">适合：刚来到岛上的你。</p>
+            <p id="map-detail-action">我能做什么：新手引导、今日心情打卡。</p>
+            <p class="map-unlock" id="map-detail-unlock">入口区域已开放。</p>
+            <a class="solid-button" id="map-detail-link" href="#mood">进入码头</a>
+          </aside>
         </div>
       </section>
 
