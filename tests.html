@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>心灵岛屿 | 心理测试中心</title>
+    <meta
+      name="description"
+      content="心灵岛屿心理测试中心，提供原创的社交焦虑倾向、压力负荷、情绪能量、情商灯塔和职业性格航线测试。"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="tests.js" defer></script>
+  </head>
+  <body class="tests-page">
+    <header class="site-header tests-header">
+      <a class="brand" href="index.html" aria-label="返回心灵岛屿首页">心灵岛屿</a>
+      <nav class="site-nav" aria-label="主导航">
+        <a href="index.html#about">关于岛屿</a>
+        <a href="index.html#method">心理技术</a>
+        <a href="tests.html">心理测试</a>
+        <a href="index.html#help">获得帮助</a>
+      </nav>
+      <a class="nav-link" href="index.html">首页</a>
+    </header>
+
+    <main>
+      <section class="tests-hero" aria-labelledby="tests-title">
+        <div class="tests-hero-copy">
+          <p class="eyebrow">MENTAL SELF-CHECK</p>
+          <h1 id="tests-title">心理测试中心</h1>
+          <p>
+            参考常见高频心理测试入口，重新设计为心灵岛屿自己的原创题库与结果系统。测试用于自我了解，不作为医学诊断。
+          </p>
+        </div>
+      </section>
+
+      <section class="test-shell" aria-label="心理测试应用">
+        <aside class="test-catalog" aria-labelledby="catalog-title">
+          <p class="section-label">POPULAR TESTS</p>
+          <h2 id="catalog-title">选择一座岛</h2>
+          <div class="test-card-list" id="test-list"></div>
+        </aside>
+
+        <section class="test-stage" aria-live="polite">
+          <div class="stage-empty" id="stage-empty">
+            <p class="section-label">READY</p>
+            <h2>从左侧选择一个测试。</h2>
+            <p>每个测试 8 道题，约 2 分钟完成。结果会在本页生成，不会跳转到外部网站。</p>
+          </div>
+
+          <article class="active-test" id="active-test" hidden>
+            <div class="test-meta">
+              <span id="test-kicker"></span>
+              <span id="test-count"></span>
+            </div>
+            <h2 id="test-title"></h2>
+            <p id="test-description"></p>
+            <div class="progress-track" aria-hidden="true">
+              <div id="progress-bar"></div>
+            </div>
+            <form id="test-form"></form>
+            <div class="test-controls">
+              <button class="ghost-button" type="button" id="reset-test">重新选择</button>
+              <button class="solid-button" type="button" id="show-result">查看结果</button>
+            </div>
+          </article>
+
+          <article class="result-panel" id="result-panel" hidden>
+            <p class="section-label">YOUR ISLAND REPORT</p>
+            <h2 id="result-title"></h2>
+            <p id="result-summary"></p>
+            <div class="result-score">
+              <span id="result-score"></span>
+              <small id="result-range"></small>
+            </div>
+            <div class="result-advice" id="result-advice"></div>
+            <div class="test-controls">
+              <button class="ghost-button" type="button" id="retake-test">再测一次</button>
+              <a class="solid-button" href="index.html#help">需要帮助</a>
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

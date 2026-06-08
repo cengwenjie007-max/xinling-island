@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 980" role="img" aria-labelledby="title desc">
+  <title id="title">漫画风格心理岛屿</title>
+  <desc id="desc">一座环形海岛包围着蓝绿色泻湖，岛上有瀑布、棕榈树、小屋和游艇。</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#9ee8ff"/>
+      <stop offset="0.58" stop-color="#fef0b8"/>
+      <stop offset="1" stop-color="#ffd1bf"/>
+    </linearGradient>
+    <radialGradient id="lagoon" cx="50%" cy="46%" r="52%">
+      <stop offset="0" stop-color="#41d9e9"/>
+      <stop offset="0.58" stop-color="#11bbb9"/>
+      <stop offset="1" stop-color="#047987"/>
+    </radialGradient>
+    <linearGradient id="sea" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#006c91"/>
+      <stop offset="1" stop-color="#052b58"/>
+    </linearGradient>
+    <filter id="rough">
+      <feTurbulence baseFrequency="0.018" numOctaves="3" seed="7" type="fractalNoise"/>
+      <feDisplacementMap in="SourceGraphic" scale="7"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="980" rx="58" fill="url(#sky)"/>
+  <path d="M0 615 C130 560 240 635 355 590 C520 525 652 610 900 548 L900 980 L0 980 Z" fill="url(#sea)"/>
+  <path d="M18 700 C94 674 142 737 218 708 S362 660 455 705 618 746 722 698 849 662 900 689 L900 980 L0 980 Z" fill="#074973" opacity=".45"/>
+
+  <g opacity=".7" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round">
+    <path d="M64 736 C128 718 176 728 232 750"/>
+    <path d="M556 792 C632 760 704 766 778 806"/>
+    <path d="M174 863 C238 836 296 845 348 875"/>
+    <path d="M52 917 C144 888 218 904 286 934"/>
+  </g>
+
+  <ellipse cx="448" cy="512" rx="392" ry="300" fill="#274153" opacity=".23"/>
+  <path d="M118 482 C88 306 214 138 438 105 C638 77 788 184 811 372 C836 580 656 724 447 717 C247 710 147 633 118 482Z" fill="#35535a" stroke="#193344" stroke-width="10" filter="url(#rough)"/>
+  <path d="M147 468 C123 318 234 176 437 145 C616 118 750 210 775 375 C799 544 640 670 450 668 C270 667 171 593 147 468Z" fill="#52725b" stroke="#193344" stroke-width="7"/>
+  <path d="M207 456 C194 344 280 253 435 232 C580 213 689 273 710 389 C732 514 610 606 454 607 C306 608 221 550 207 456Z" fill="#fff0c0" stroke="#193344" stroke-width="6"/>
+  <path d="M241 453 C232 364 302 293 433 277 C558 262 652 311 673 397 C696 492 588 565 457 568 C331 570 252 526 241 453Z" fill="url(#lagoon)" stroke="#193344" stroke-width="7"/>
+  <path d="M296 455 C348 419 409 404 478 416 C546 428 594 461 628 506 C586 548 523 572 454 568 C386 565 330 527 296 455Z" fill="#72f3e7" opacity=".55"/>
+
+  <path d="M422 158 C414 228 414 255 410 286 C406 327 391 352 369 381" fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round"/>
+  <path d="M422 158 C416 229 416 255 413 286 C409 326 396 350 376 379" fill="none" stroke="#5ce8ff" stroke-width="11" stroke-linecap="round"/>
+  <ellipse cx="369" cy="386" rx="44" ry="16" fill="#ffffff" opacity=".75"/>
+
+  <g stroke="#193344" stroke-width="5" stroke-linejoin="round">
+    <path d="M171 388 L248 350 L318 377 L250 414 Z" fill="#ffb66f"/>
+    <path d="M188 391 L248 364 L301 383 L249 408 Z" fill="#fff5d1"/>
+    <rect x="202" y="393" width="88" height="32" rx="5" fill="#7ce3dc"/>
+    <path d="M608 375 L683 342 L752 370 L682 405 Z" fill="#f2f7ff"/>
+    <path d="M627 379 L684 356 L733 375 L682 398 Z" fill="#bdefff"/>
+    <rect x="642" y="394" width="78" height="31" rx="5" fill="#fff5d1"/>
+  </g>
+
+  <g stroke="#193344" stroke-width="5" stroke-linecap="round">
+    <g transform="translate(166 520) rotate(-18)">
+      <path d="M0 0 C18 -36 30 -70 28 -105" fill="none"/>
+      <path d="M29 -105 C-4 -105 -31 -86 -43 -60 C-9 -73 17 -72 29 -105Z" fill="#53c55a"/>
+      <path d="M29 -105 C54 -91 74 -66 72 -36 C54 -60 38 -74 29 -105Z" fill="#7dea6f"/>
+      <path d="M29 -105 C13 -139 4 -166 22 -195 C28 -160 31 -135 29 -105Z" fill="#9bf16d"/>
+    </g>
+    <g transform="translate(690 500) rotate(19)">
+      <path d="M0 0 C12 -42 22 -74 18 -116" fill="none"/>
+      <path d="M18 -116 C-14 -112 -39 -89 -49 -58 C-17 -74 8 -78 18 -116Z" fill="#53c55a"/>
+      <path d="M18 -116 C50 -102 68 -73 69 -44 C50 -66 34 -84 18 -116Z" fill="#7dea6f"/>
+      <path d="M18 -116 C5 -148 -5 -170 13 -201 C22 -164 24 -142 18 -116Z" fill="#9bf16d"/>
+    </g>
+  </g>
+
+  <g fill="#69d35f" stroke="#193344" stroke-width="4">
+    <circle cx="226" cy="261" r="18"/><circle cx="263" cy="239" r="15"/><circle cx="306" cy="214" r="18"/>
+    <circle cx="572" cy="206" r="17"/><circle cx="618" cy="224" r="19"/><circle cx="702" cy="307" r="17"/>
+    <circle cx="189" cy="588" r="19"/><circle cx="644" cy="618" r="17"/><circle cx="720" cy="548" r="15"/>
+  </g>
+
+  <path d="M391 704 C409 748 505 748 525 702 C498 716 424 717 391 704Z" fill="#ffd9a0" stroke="#193344" stroke-width="7"/>
+  <path d="M359 706 C407 686 503 689 557 707 C534 751 394 759 359 706Z" fill="#20c7c5" stroke="#193344" stroke-width="6"/>
+  <path d="M369 716 C417 734 494 735 548 715" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+
+  <g stroke="#193344" stroke-width="5" stroke-linejoin="round">
+    <path d="M104 797 C153 760 215 756 253 786 C210 812 153 822 104 797Z" fill="#ffffff"/>
+    <path d="M151 785 L208 779 L232 790 L171 802 Z" fill="#8ff4ff"/>
+    <path d="M647 773 C686 744 738 744 769 770 C734 790 688 798 647 773Z" fill="#ffffff"/>
+    <path d="M684 764 L732 761 L750 771 L699 780 Z" fill="#ffb6a8"/>
+    <path d="M382 866 C415 843 457 845 482 866 C452 881 413 887 382 866Z" fill="#ffffff"/>
+    <path d="M413 858 L452 858 L466 866 L425 873 Z" fill="#ffe07d"/>
+  </g>
+
+  <g fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity=".72">
+    <path d="M128 823 C165 836 214 830 251 807"/>
+    <path d="M650 796 C688 807 739 800 772 780"/>
+    <path d="M380 888 C419 900 462 891 488 873"/>
+  </g>
+
+  <g fill="#193344" opacity=".12">
+    <circle cx="154" cy="152" r="34"/>
+    <circle cx="208" cy="122" r="19"/>
+    <circle cx="726" cy="142" r="28"/>
+  </g>
+</svg>
