@@ -7,12 +7,19 @@ const defaultState = {
   quests: {},
   moods: [],
   bottles: ["今天也许不完美，但我已经在靠岸。"],
+  consultIntent: {
+    service: "倾听员陪伴",
+    topic: "",
+    summary: ""
+  },
   lastMoodRewardDate: "",
-  lastBottleRewardDate: ""
+  lastBottleRewardDate: "",
+  lastConsultRewardDate: ""
 };
 
 const state = loadState();
 let selectedMood = { mood: "开心", energy: 8 };
+let selectedService = state.consultIntent?.service || "倾听员陪伴";
 
 const mapPlaces = {
   pier: {
@@ -94,7 +101,11 @@ function normalizeState(nextState) {
     badges: Array.isArray(nextState.badges) ? nextState.badges : [...defaultState.badges],
     quests: nextState.quests && typeof nextState.quests === "object" ? nextState.quests : {},
     moods: Array.isArray(nextState.moods) ? nextState.moods : [],
-    bottles: Array.isArray(nextState.bottles) ? nextState.bottles : [...defaultState.bottles]
+    bottles: Array.isArray(nextState.bottles) ? nextState.bottles : [...defaultState.bottles],
+    consultIntent:
+      nextState.consultIntent && typeof nextState.consultIntent === "object"
+        ? { ...defaultState.consultIntent, ...nextState.consultIntent }
+        : { ...defaultState.consultIntent }
   };
 }
 
@@ -193,6 +204,17 @@ function renderBottles() {
       return article;
     });
   list.replaceChildren(...items);
+}
+
+function renderBookingState() {
+  const topic = document.querySelector("#booking-topic");
+  const summary = document.querySelector("#booking-summary");
+  if (!topic || !summary) return;
+  topic.value = state.consultIntent.topic || "";
+  summary.textContent = state.consultIntent.summary || "选择服务并写下主题后，这里会生成一份可复制给倾听员或咨询师的摘要。";
+  document.querySelectorAll(".booking-option").forEach((button) => {
+    button.classList.toggle("active", button.dataset.service === selectedService);
+  });
 }
 
 function insightForMoods() {
@@ -311,6 +333,45 @@ document.querySelector("#send-bottle").addEventListener("click", () => {
   renderBottles();
 });
 
+document.querySelectorAll(".booking-option").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".booking-option").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    selectedService = button.dataset.service;
+  });
+});
+
+document.querySelector("#create-booking-summary").addEventListener("click", () => {
+  const topicInput = document.querySelector("#booking-topic");
+  const summary = document.querySelector("#booking-summary");
+  const topic = topicInput.value.trim();
+  if (!topic) {
+    summary.textContent = "可以先写一句最想被理解的事，例如：最近失眠、关系压力、工作很累。";
+    topicInput.focus();
+    return;
+  }
+  const recentMood = state.moods.at(-1);
+  const cleanTopic = topic.slice(0, 180).replace(/[。！？!?.,，、\s]+$/g, "");
+  const moodText = recentMood ? `最近一次情绪记录：${recentMood.mood}，能量 ${recentMood.energy}/10。` : "暂未记录情绪。";
+  const bookingText = `我想预约：${selectedService}。当前主题：${cleanTopic}。${moodText} 希望先获得稳定倾听、状态梳理和下一步建议。`;
+  state.consultIntent = {
+    service: selectedService,
+    topic: cleanTopic,
+    summary: bookingText,
+    date: new Date().toISOString()
+  };
+  awardBadge("点亮求助灯塔");
+  const today = todayKey();
+  if (state.lastConsultRewardDate !== today) {
+    addSoul(6);
+    state.lastConsultRewardDate = today;
+  }
+  saveState();
+  updateGrowth();
+  summary.textContent = `${bookingText} 摘要已生成，可复制给倾听员或咨询师。`;
+  navigator.clipboard?.writeText(bookingText).catch(() => {});
+});
+
 document.querySelectorAll("[data-place]").forEach((button) => {
   button.addEventListener("click", () => showMapPlace(button.dataset.place));
 });
@@ -320,6 +381,7 @@ updateGrowth();
 renderMoodChart();
 renderMoodHistory();
 renderBottles();
+renderBookingState();
 document.querySelector("#ai-insight").textContent = insightForMoods();
 updateMapLocks();
 showMapPlace("pier");
