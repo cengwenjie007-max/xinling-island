@@ -1177,7 +1177,7 @@ body {
 .stage-empty {
   background:
     linear-gradient(rgba(255, 253, 248, 0.76), rgba(255, 253, 248, 0.88)),
-    url("assets/island-comic.svg") center / min(78%, 620px) no-repeat;
+    url("assets/dream-garden-bg.png") center / cover;
 }
 
 .map-detail {
@@ -1406,7 +1406,7 @@ body {
   justify-content: flex-end;
   background:
     linear-gradient(rgba(255, 253, 248, 0.78), rgba(255, 253, 248, 0.94)),
-    url("assets/island-comic.svg") center / min(78%, 620px) no-repeat;
+    url("assets/dream-garden-bg.png") center / cover;
 }
 
 .stage-empty p:not(.section-label),
@@ -1866,18 +1866,6 @@ body {
     url("assets/dream-garden-bg.png") center / cover;
 }
 
-.stage-empty::before {
-  content: "";
-  position: absolute;
-  inset: 8% 4% auto auto;
-  width: min(58%, 430px);
-  aspect-ratio: 1;
-  background: url("assets/island-comic.svg") center / contain no-repeat;
-  opacity: 0.18;
-  pointer-events: none;
-  z-index: -1;
-}
-
 .stage-empty h2,
 .stage-empty p {
   max-width: 560px;
@@ -1963,9 +1951,4 @@ body {
     padding: 24px;
   }
 
-  .stage-empty::before {
-    inset: 4% -10% auto auto;
-    width: 78%;
-    opacity: 0.12;
-  }
 }
