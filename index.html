@@ -281,30 +281,47 @@
         <p class="section-label">10 / HELP</p>
         <h2 id="help-title">当你想获得帮助，可以先点亮这座灯塔。</h2>
         <p class="story-text">
-          心灵岛屿目前是自助记录与状态整理工具，不提供真实咨询预约。它可以帮你把感受说清楚一点，也提醒你在需要时把自己交给真实、可靠的支持系统。
+          心灵岛屿会先帮你把状态整理成清楚的求助主题：适合倾听员陪伴的问题，可以先被接住；需要更深入处理的问题，再进入心理咨询准备。
         </p>
         <div class="help-grid">
           <article class="help-card">
-            <span>适合寻求咨询</span>
-            <p>情绪低落、焦虑、失眠、关系压力或自我伤害想法持续影响生活时，不建议只靠自己撑过去。</p>
+            <span>情绪倾听</span>
+            <p>适合近期委屈、孤独、压力大，想先被认真听见的人。目标是陪你说清楚，不急着给结论。</p>
           </article>
           <article class="help-card">
-            <span>求助前可准备</span>
-            <p>最近持续多久、影响了什么、最想解决的问题、身边是否有人能陪你一起联系专业资源。</p>
+            <span>心理咨询</span>
+            <p>适合低落、焦虑、失眠、关系压力持续影响生活的人。建议带着测试结果和最近状态一起沟通。</p>
           </article>
           <article class="help-card urgent">
             <span>紧急情况</span>
             <p>如果你担心自己或他人马上有危险，请优先联系当地紧急电话、医院急诊或身边可信任的人。</p>
           </article>
         </div>
+        <div class="booking-panel" aria-labelledby="booking-title">
+          <div>
+            <p class="section-label">MATCHING</p>
+            <h3 id="booking-title">把测试结果变成一次可开口的求助。</h3>
+            <p>选择你现在更需要的支持，写下最想聊的一句话，心灵岛会生成一份预约摘要。正式上线时，这里可以直接接入微信、表单或支付链接。</p>
+          </div>
+          <div class="booking-form">
+            <div class="booking-options" role="radiogroup" aria-label="选择支持方式">
+              <button class="booking-option active" type="button" data-service="倾听员陪伴">倾听员陪伴</button>
+              <button class="booking-option" type="button" data-service="心理咨询">心理咨询</button>
+              <button class="booking-option" type="button" data-service="测试结果解读">测试结果解读</button>
+            </div>
+            <textarea id="booking-topic" rows="4" placeholder="例如：最近压力很大，睡眠变差，想先有人听我说说。"></textarea>
+            <button class="solid-button" type="button" id="create-booking-summary">生成并复制预约摘要</button>
+            <p class="booking-summary" id="booking-summary" aria-live="polite">选择服务并写下主题后，这里会生成一份可复制给倾听员或咨询师的摘要。</p>
+          </div>
+        </div>
         <div class="help-actions">
           <a class="action-card" href="tests.html">
             <span>心理测试</span>
             <strong>进入站内测试中心</strong>
           </a>
-          <a class="action-card" href="tests.html#stress-storm">
-            <span>灯塔准备</span>
-            <strong>先完成一份状态自评，再寻找正规支持</strong>
+          <a class="action-card" href="#help">
+            <span>咨询转化</span>
+            <strong>生成预约摘要，匹配倾听员或心理咨询</strong>
           </a>
         </div>
       </section>
