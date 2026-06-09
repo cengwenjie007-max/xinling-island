@@ -318,7 +318,28 @@ function showResult() {
   const advice = document.querySelector("#result-advice");
   const intro = createElement("p", "", "下一步可以从一件低门槛的小事开始：记录今天的状态、和可信任的人说一句，或在需要时寻找专业支持。");
   advice.replaceChildren(intro, ...result.advice.map((item) => createElement("p", "", item)));
+  renderConsultMatch(test, score);
   resultPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderConsultMatch(test, score) {
+  const title = document.querySelector("#consult-match-title");
+  const copy = document.querySelector("#consult-match-copy");
+  if (!title || !copy) return;
+  const highScore = test.positive ? score <= 8 : score >= 16;
+  const mediumScore = test.positive ? score <= 16 : score >= 7;
+  if (highScore) {
+    title.textContent = "建议优先匹配心理咨询";
+    copy.textContent = "这份结果提示当前议题可能已经明显影响生活。建议带着测试结果、持续时间和最困扰的问题，寻找正规心理咨询或医疗资源。";
+    return;
+  }
+  if (mediumScore) {
+    title.textContent = "适合先找倾听员梳理";
+    copy.textContent = "你可以先预约一次倾听陪伴，把近期压力、关系或情绪主题说清楚，再决定是否需要更深入的心理咨询。";
+    return;
+  }
+  title.textContent = "适合做日常自助维护";
+  copy.textContent = "当前结果更适合继续记录情绪、定期复测和保持稳定习惯。如果之后状态反复，也可以回到求助灯塔整理咨询主题。";
 }
 
 renderList();
