@@ -2267,3 +2267,93 @@ body {
   }
 
 }
+
+.portal-page {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(255, 250, 242, 0.82), rgba(232, 249, 246, 0.88)),
+    url("assets/ocean-section-bg.png") center / cover fixed;
+}
+
+.portal-shell {
+  width: min(920px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 120px 0 80px;
+}
+
+.portal-shell.wide {
+  width: min(1180px, calc(100% - 32px));
+}
+
+.portal-card {
+  display: grid;
+  gap: 18px;
+  padding: clamp(24px, 5vw, 52px);
+  border: 1px solid rgba(255, 255, 255, 0.54);
+  background: rgba(255, 253, 248, 0.84);
+  box-shadow: 0 28px 76px rgba(10, 36, 48, 0.16);
+  backdrop-filter: blur(18px);
+}
+
+.portal-card h1 {
+  margin: 0;
+  font-size: clamp(42px, 8vw, 88px);
+  line-height: 1.02;
+}
+
+.portal-card label {
+  display: grid;
+  gap: 8px;
+  color: var(--deep);
+  font-weight: 850;
+}
+
+.portal-card input,
+.portal-card select {
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 253, 248, 0.82);
+  color: var(--ink);
+  font: inherit;
+}
+
+.portal-actions,
+.portal-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.portal-list {
+  display: grid;
+  gap: 14px;
+}
+
+.portal-item {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-left: 4px solid var(--sea);
+  background: rgba(255, 253, 248, 0.72);
+}
+
+.portal-item.urgent {
+  border-left-color: #d24d57;
+  background: rgba(255, 238, 235, 0.84);
+}
+
+.portal-item span {
+  color: var(--sea);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.portal-item p,
+.portal-item small {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
