@@ -824,6 +824,63 @@ input[type="text"] {
   background: #fffaf3;
 }
 
+.sprite-stage {
+  position: relative;
+  min-height: 220px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.46);
+  background:
+    radial-gradient(circle at 50% 46%, rgba(151, 255, 221, 0.34), transparent 28%),
+    linear-gradient(135deg, rgba(9, 44, 55, 0.82), rgba(16, 96, 101, 0.46));
+  box-shadow: inset 0 0 42px rgba(141, 255, 224, 0.18);
+}
+
+.sprite-stage canvas {
+  display: block;
+  width: 100%;
+  height: 220px;
+}
+
+.sprite-fallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  pointer-events: none;
+}
+
+.sprite-fallback span {
+  display: grid;
+  width: 96px;
+  height: 96px;
+  place-items: center;
+  border-radius: 50%;
+  color: #102d3a;
+  background: radial-gradient(circle, #fff7bc, #87d9d2);
+  box-shadow: 0 0 42px rgba(165, 255, 222, 0.8);
+  font-size: 36px;
+  font-weight: 900;
+  animation: spriteFloat 3.4s ease-in-out infinite;
+}
+
+.sprite-stage.no-webgl canvas {
+  display: none;
+}
+
+.sprite-stage.no-webgl .sprite-fallback {
+  display: grid;
+}
+
+@keyframes spriteFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-12px) scale(1.04);
+  }
+}
+
 .sprite-card {
   display: flex;
   gap: 18px;
@@ -852,6 +909,49 @@ input[type="text"] {
   margin: 0;
   color: var(--muted);
   line-height: 1.8;
+}
+
+.sprite-log {
+  display: grid;
+  max-height: 280px;
+  gap: 10px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.sprite-message {
+  display: grid;
+  gap: 6px;
+  max-width: 88%;
+  padding: 14px 16px;
+  background: rgba(255, 253, 248, 0.74);
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.sprite-message.user {
+  justify-self: end;
+  background: rgba(230, 249, 244, 0.86);
+  color: var(--deep);
+}
+
+.sprite-message span {
+  color: var(--sea);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+.sprite-message p {
+  margin: 0;
+}
+
+.sprite-status {
+  min-height: 24px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .chat-input-row {
@@ -1912,6 +2012,20 @@ body {
 
   .chat-input-row {
     grid-template-columns: 1fr;
+  }
+
+  .sprite-stage,
+  .sprite-stage canvas {
+    min-height: 180px;
+    height: 180px;
+  }
+
+  .sprite-log {
+    max-height: 240px;
+  }
+
+  .sprite-message {
+    max-width: 100%;
   }
 }
 
