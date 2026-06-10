@@ -112,6 +112,7 @@ function normalizeState(nextState) {
     quests: nextState.quests && typeof nextState.quests === "object" ? nextState.quests : {},
     moods: Array.isArray(nextState.moods) ? nextState.moods : [],
     bottles: Array.isArray(nextState.bottles) ? nextState.bottles : [...defaultState.bottles],
+    spriteChats: Array.isArray(nextState.spriteChats) ? nextState.spriteChats : [...defaultState.spriteChats],
     consultIntent:
       nextState.consultIntent && typeof nextState.consultIntent === "object"
         ? { ...defaultState.consultIntent, ...nextState.consultIntent }
@@ -262,16 +263,31 @@ function setSpriteStatus(message, mood = "idle") {
   spriteMood = mood;
 }
 
+async function syncSpriteChat(role, content) {
+  if (!window.XinlingBackend?.isConfigured()) return;
+  try {
+    await XinlingBackend.saveSpriteChat({ role, content });
+  } catch (_error) {
+    // Local fallback stays authoritative when backend is unavailable.
+  }
+}
+
 async function askCompanionAI(message) {
-  if (!COMPANION_API_URL) {
+  const apiUrl = window.XINLING_BACKEND_CONFIG?.apiBaseUrl
+    ? `${window.XINLING_BACKEND_CONFIG.apiBaseUrl}/api/companion`
+    : COMPANION_API_URL;
+  if (!apiUrl) {
     throw new Error("Companion API URL is not configured.");
   }
   const history = (state.spriteChats || [])
     .slice(-MAX_SPRITE_CHATS)
     .map((item) => ({ role: item.role, content: item.content }));
-  const response = await fetch(COMPANION_API_URL, {
+  const session = await window.XinlingBackend?.getSession?.();
+  const headers = { "Content-Type": "application/json" };
+  if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+  const response = await fetch(apiUrl, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ message, history })
   });
   if (!response.ok) throw new Error(`Companion API failed: ${response.status}`);
@@ -287,8 +303,11 @@ async function sendSpriteMessage() {
   if (!text) return;
   input.value = "";
   appendSpriteChat("user", text);
+  syncSpriteChat("user", text);
   if (CRISIS_PATTERN.test(text)) {
-    appendSpriteChat("assistant", fallbackSpriteReply(text));
+    const reply = fallbackSpriteReply(text);
+    appendSpriteChat("assistant", reply);
+    syncSpriteChat("assistant", reply);
     setSpriteStatus("检测到安全风险：已优先显示现实求助提示，未调用 AI。", "alert");
     return;
   }
@@ -299,7 +318,9 @@ async function sendSpriteMessage() {
     appendSpriteChat("assistant", data.reply);
     setSpriteStatus(data.safety === "crisis" ? "AI 返回了安全提示，请优先联系现实支持。" : "AI 陪伴已回应。", data.safety === "crisis" ? "alert" : "glow");
   } catch (_error) {
-    appendSpriteChat("assistant", fallbackSpriteReply(text));
+    const reply = fallbackSpriteReply(text);
+    appendSpriteChat("assistant", reply);
+    syncSpriteChat("assistant", reply);
     setSpriteStatus("AI Worker 暂未连接，已使用本地温柔回应。", "fallback");
   } finally {
     button.disabled = false;
@@ -491,6 +512,11 @@ document.querySelector("#save-mood").addEventListener("click", () => {
     note: text.slice(0, 260),
     date: new Date().toISOString()
   });
+  window.XinlingBackend?.saveMood?.({
+    mood: selectedMood.mood,
+    energy: selectedMood.energy,
+    note: text.slice(0, 260)
+  }).catch(() => {});
   state.energy = selectedMood.energy;
   const today = todayKey();
   if (state.lastMoodRewardDate !== today) {
@@ -559,6 +585,12 @@ document.querySelector("#create-booking-summary").addEventListener("click", () =
     summary: bookingText,
     date: new Date().toISOString()
   };
+  window.XinlingBackend?.createConsultRequest?.({
+    serviceType: selectedService,
+    topic: cleanTopic,
+    summary: bookingText,
+    source: "homepage"
+  }).catch(() => {});
   awardBadge("点亮求助灯塔");
   const today = todayKey();
   if (state.lastConsultRewardDate !== today) {
