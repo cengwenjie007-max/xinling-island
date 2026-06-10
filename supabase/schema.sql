@@ -60,6 +60,29 @@ create table public.sprite_chats (
   created_at timestamptz not null default now()
 );
 
+create table public.drift_bottles (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete set null,
+  islander_no bigint generated always as identity,
+  content text not null,
+  mood text,
+  visibility text not null default 'public' check (visibility in ('public', 'private')),
+  moderation_status text not null default 'approved' check (moderation_status in ('pending', 'approved', 'hidden')),
+  risk_flag boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create table public.island_logs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete set null,
+  islander_no bigint generated always as identity,
+  content text not null,
+  visibility text not null default 'public' check (visibility in ('public', 'private')),
+  moderation_status text not null default 'approved' check (moderation_status in ('pending', 'approved', 'hidden')),
+  risk_flag boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
 create table public.consult_requests (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references public.profiles(id) on delete set null,
@@ -98,6 +121,8 @@ create table public.audit_logs (
 create index mood_entries_user_created_idx on public.mood_entries(user_id, created_at desc);
 create index test_sessions_user_created_idx on public.test_sessions(user_id, created_at desc);
 create index sprite_chats_user_created_idx on public.sprite_chats(user_id, created_at desc);
+create index drift_bottles_public_created_idx on public.drift_bottles(visibility, moderation_status, created_at desc);
+create index island_logs_public_created_idx on public.island_logs(visibility, moderation_status, created_at desc);
 create index consult_requests_status_created_idx on public.consult_requests(status, created_at desc);
 create index assignments_provider_status_idx on public.assignments(provider_id, status);
 
@@ -192,6 +217,8 @@ alter table public.providers enable row level security;
 alter table public.mood_entries enable row level security;
 alter table public.test_sessions enable row level security;
 alter table public.sprite_chats enable row level security;
+alter table public.drift_bottles enable row level security;
+alter table public.island_logs enable row level security;
 alter table public.consult_requests enable row level security;
 alter table public.assignments enable row level security;
 alter table public.audit_logs enable row level security;
@@ -224,6 +251,24 @@ create policy "sprite owner all" on public.sprite_chats
 for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "sprite admin read" on public.sprite_chats
 for select using (public.is_admin());
+
+create policy "bottles public approved read" on public.drift_bottles
+for select using (visibility = 'public' and moderation_status = 'approved' and risk_flag = false);
+create policy "bottles owner insert" on public.drift_bottles
+for insert with check (user_id = auth.uid() or user_id is null);
+create policy "bottles owner read" on public.drift_bottles
+for select using (user_id = auth.uid());
+create policy "bottles admin all" on public.drift_bottles
+for all using (public.is_admin()) with check (public.is_admin());
+
+create policy "logs public approved read" on public.island_logs
+for select using (visibility = 'public' and moderation_status = 'approved' and risk_flag = false);
+create policy "logs owner insert" on public.island_logs
+for insert with check (user_id = auth.uid() or user_id is null);
+create policy "logs owner read" on public.island_logs
+for select using (user_id = auth.uid());
+create policy "logs admin all" on public.island_logs
+for all using (public.is_admin()) with check (public.is_admin());
 
 create policy "consult owner insert read" on public.consult_requests
 for all using (user_id = auth.uid()) with check (user_id = auth.uid());

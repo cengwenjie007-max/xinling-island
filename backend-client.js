@@ -19,12 +19,12 @@
   }
 
   async function signIn(email, password) {
-    if (!client) throw new Error("Supabase 尚未配置。");
+    if (!client) throw new Error("Supabase ?????");
     return client.auth.signInWithPassword({ email, password });
   }
 
   async function signUp(email, password, nickname) {
-    if (!client) throw new Error("Supabase 尚未配置。");
+    if (!client) throw new Error("Supabase ?????");
     return client.auth.signUp({
       email,
       password,
@@ -38,7 +38,7 @@
   }
 
   async function apiFetch(path, options = {}) {
-    if (!isConfigured()) throw new Error("后端 API 尚未配置。");
+    if (!isConfigured()) throw new Error("?? API ?????");
     const session = await getSession();
     const headers = {
       "Content-Type": "application/json",
@@ -50,7 +50,7 @@
       headers
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || `API 请求失败：${response.status}`);
+    if (!response.ok) throw new Error(data.error || `API ?????${response.status}`);
     return data;
   }
 
@@ -72,6 +72,22 @@
 
   async function saveSpriteChat(message) {
     return apiFetch("/api/sprite-chats", { method: "POST", body: JSON.stringify(message) });
+  }
+
+  async function sendBottle(bottle) {
+    return apiFetch("/api/bottles", { method: "POST", body: JSON.stringify(bottle) });
+  }
+
+  async function getRandomBottle() {
+    return apiFetch("/api/bottles/random");
+  }
+
+  async function listIslandLogs() {
+    return apiFetch("/api/island-logs");
+  }
+
+  async function getStats() {
+    return apiFetch("/api/stats");
   }
 
   async function adminListRequests(filters = {}) {
@@ -111,6 +127,10 @@
     saveTestSession,
     createConsultRequest,
     saveSpriteChat,
+    sendBottle,
+    getRandomBottle,
+    listIslandLogs,
+    getStats,
     adminListRequests,
     adminAssignRequest,
     providerListAssignments,

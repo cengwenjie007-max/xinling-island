@@ -2357,3 +2357,340 @@ body {
   color: var(--muted);
   line-height: 1.7;
 }
+
+.weather-hint {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(9, 47, 62, 0.28);
+  backdrop-filter: blur(12px);
+  font-weight: 850;
+}
+
+.map-board {
+  isolation: isolate;
+  animation: mapBreath 8s ease-in-out infinite;
+}
+
+.map-sea {
+  animation: seaDrift 16s linear infinite;
+}
+
+.map-cloud,
+.map-firefly {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.map-cloud {
+  width: 150px;
+  height: 54px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.36);
+  filter: blur(2px);
+  animation: cloudSail 18s ease-in-out infinite;
+}
+
+.map-cloud::before,
+.map-cloud::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: inherit;
+}
+
+.map-cloud::before {
+  left: 24px;
+  top: -22px;
+  width: 64px;
+  height: 64px;
+}
+
+.map-cloud::after {
+  right: 24px;
+  top: -14px;
+  width: 48px;
+  height: 48px;
+}
+
+.cloud-one {
+  left: 7%;
+  top: 11%;
+}
+
+.cloud-two {
+  right: 8%;
+  top: 22%;
+  transform: scale(0.72);
+  animation-delay: -7s;
+}
+
+.map-firefly {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f6ffbd;
+  box-shadow: 0 0 18px #efffa0, 0 0 34px rgba(159, 255, 208, 0.7);
+  opacity: 0.75;
+  animation: fireflyFloat 7s ease-in-out infinite;
+}
+
+.firefly-one {
+  left: 42%;
+  top: 42%;
+}
+
+.firefly-two {
+  left: 66%;
+  top: 32%;
+  animation-delay: -2s;
+}
+
+.firefly-three {
+  left: 57%;
+  top: 64%;
+  animation-delay: -4s;
+}
+
+.map-board.weather-night,
+.map-board.weather-stars {
+  background:
+    linear-gradient(rgba(4, 17, 36, 0.32), rgba(5, 28, 43, 0.42)),
+    url("assets/island-map-bg.png") center / cover;
+}
+
+.map-board.weather-rain {
+  background:
+    linear-gradient(120deg, rgba(8, 33, 50, 0.34), rgba(193, 222, 226, 0.24)),
+    url("assets/island-map-bg.png") center / cover;
+}
+
+.map-board.weather-rain::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(105deg, rgba(255, 255, 255, 0.28) 0 1px, transparent 1px 18px);
+  opacity: 0.32;
+  animation: rainFall 900ms linear infinite;
+}
+
+.map-board.weather-day .map-firefly {
+  opacity: 0.26;
+}
+
+.map-board.weather-stars .map-firefly,
+.map-board.weather-night .map-firefly {
+  opacity: 1;
+}
+
+.map-point.lighthouse .map-icon,
+.map-point.temple .map-icon {
+  animation: lighthousePulse 2.6s ease-in-out infinite;
+}
+
+.island-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.island-stats article,
+.received-bottle,
+.mood-pulse,
+.island-logs {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(4, 20, 31, 0.16);
+  backdrop-filter: blur(16px);
+}
+
+.island-stats article {
+  padding: 16px;
+}
+
+.island-stats span {
+  display: block;
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 950;
+}
+
+.island-stats p,
+.stats-source {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.stats-source {
+  font-weight: 850;
+}
+
+.community-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.community-status {
+  min-height: 1.4em;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 800;
+}
+
+.community-status[data-tone="alert"] {
+  color: #ffe4b7;
+}
+
+.received-bottle,
+.mood-pulse,
+.island-logs {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.received-bottle span,
+.mood-pulse > strong,
+.island-logs > strong {
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.mood-pulse-row {
+  display: grid;
+  grid-template-columns: minmax(70px, auto) 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.mood-pulse-row span,
+.mood-pulse-row b {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.mood-pulse-track {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.mood-pulse-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9af7d4, #f7db8d);
+}
+
+.island-logs article {
+  display: grid;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.island-logs span {
+  color: var(--warm);
+  font-weight: 900;
+}
+
+.island-logs p,
+.received-bottle p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@keyframes seaDrift {
+  from {
+    transform: translate3d(-1.5%, -1%, 0);
+  }
+  to {
+    transform: translate3d(1.5%, 1%, 0);
+  }
+}
+
+@keyframes mapBreath {
+  0%,
+  100% {
+    box-shadow: 0 24px 70px rgba(5, 35, 52, 0.16);
+  }
+  50% {
+    box-shadow: 0 30px 90px rgba(5, 90, 102, 0.24);
+  }
+}
+
+@keyframes cloudSail {
+  0%,
+  100% {
+    translate: -8px 0;
+  }
+  50% {
+    translate: 18px 6px;
+  }
+}
+
+@keyframes fireflyFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.72);
+  }
+  50% {
+    transform: translate3d(24px, -18px, 0) scale(1.16);
+  }
+}
+
+@keyframes lighthousePulse {
+  0%,
+  100% {
+    text-shadow: 0 0 0 rgba(255, 246, 173, 0);
+  }
+  50% {
+    text-shadow: 0 0 18px rgba(255, 246, 173, 0.96), 0 0 36px rgba(143, 244, 216, 0.58);
+  }
+}
+
+@keyframes rainFall {
+  from {
+    transform: translate3d(-12px, -18px, 0);
+  }
+  to {
+    transform: translate3d(12px, 18px, 0);
+  }
+}
+
+@media (max-width: 760px) {
+  .weather-hint {
+    width: 100%;
+    border-radius: 18px;
+  }
+
+  .island-stats,
+  .mood-pulse-row {
+    grid-template-columns: 1fr;
+  }
+
+  .community-actions {
+    align-items: stretch;
+  }
+
+  .community-actions .solid-button,
+  .community-actions .ghost-button {
+    width: 100%;
+  }
+
+  .map-cloud {
+    width: 96px;
+    height: 36px;
+  }
+}

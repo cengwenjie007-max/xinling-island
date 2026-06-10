@@ -1,5 +1,5 @@
 const MODEL = "@cf/meta/llama-3.1-8b-instruct";
-const CRISIS_PATTERN = /自杀|想死|不想活|活不下去|伤害自己|伤害别人|结束生命|轻生|割腕|跳楼|没必要活|无法保证安全|撑不下去/;
+const CRISIS_PATTERN = /??|??|???|????|????|????|????|??|??|??|????|??????|????/;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -59,7 +59,7 @@ async function getProfile(env, userId) {
 }
 
 function requireUser(user) {
-  if (!user?.id) return json({ error: "请先登录。" }, 401);
+  if (!user?.id) return json({ error: "?????" }, 401);
   return null;
 }
 
@@ -67,12 +67,12 @@ async function requireRole(env, user, roles) {
   const authError = requireUser(user);
   if (authError) return { error: authError };
   const profile = await getProfile(env, user.id);
-  if (!profile || !roles.includes(profile.role)) return { error: json({ error: "权限不足。" }, 403) };
+  if (!profile || !roles.includes(profile.role)) return { error: json({ error: "?????" }, 403) };
   return { profile };
 }
 
 function crisisReply() {
-  return "我很在意你现在的安全。请立刻联系身边可信任的人、当地紧急电话或医院急诊；如果可以，请现在走到有人在的地方，不要独自承受。网页 AI 不能替代即时危机帮助。";
+  return "?????????????????????????????????????????????????????????????? AI ???????????";
 }
 
 function sanitizeHistory(history) {
@@ -110,11 +110,11 @@ async function handleCompanion(request, env, user) {
 
   const history = sanitizeHistory(payload.history);
   const system = [
-    "你是心灵岛屿网站里的萤火精灵，一个温柔、简短、陪伴型的中文心理自助助手。",
-    "你可以帮助用户命名感受、降低压力、提出低门槛下一步。",
-    "你不能诊断疾病，不能替代心理咨询、医学诊断或紧急帮助。",
-    "遇到危机、自伤、自杀、伤害他人或无法保持安全，必须建议用户立刻联系当地紧急电话、医院急诊或身边可信任的人。",
-    "回复控制在 80 到 160 个中文字符，语气温柔、具体，不恐吓，不夸大。"
+    "????????????????????????????????????",
+    "??????????????????????????",
+    "???????????????????????????",
+    "?????????????????????????????????????????????????????",
+    "????? 80 ? 160 ??????????????????????"
   ].join("");
 
   try {
@@ -122,7 +122,7 @@ async function handleCompanion(request, env, user) {
       messages: [{ role: "system", content: system }, ...history, { role: "user", content: message }],
       max_tokens: 220
     });
-    const reply = String(result.response || result.reply || "").trim() || "我听见了。先把呼吸放慢一点，我们只处理眼前最小的一步。";
+    const reply = String(result.response || result.reply || "").trim() || "???????????????????????????";
     if (user?.id) {
       await supabaseFetch(env, "/rest/v1/sprite_chats", {
         method: "POST",
@@ -146,7 +146,7 @@ async function handleMoods(request, env, user) {
   const payload = await request.json().catch(() => ({}));
   const entry = {
     user_id: user.id,
-    mood: String(payload.mood || "未命名").slice(0, 20),
+    mood: String(payload.mood || "???").slice(0, 20),
     energy: Math.max(1, Math.min(10, Number(payload.energy || 5))),
     note: String(payload.note || "").slice(0, 500)
   };
@@ -177,11 +177,11 @@ async function handleTestSession(request, env, user) {
 async function handleConsultRequest(request, env, user) {
   const payload = await request.json().catch(() => ({}));
   const topic = String(payload.topic || "").trim().slice(0, 500);
-  if (!topic) return json({ error: "请填写求助主题。" }, 400);
+  if (!topic) return json({ error: "????????" }, 400);
   const riskFlag = Boolean(payload.riskFlag) || CRISIS_PATTERN.test(topic);
   const row = {
     user_id: user?.id || null,
-    service_type: String(payload.serviceType || "倾听员陪伴").slice(0, 60),
+    service_type: String(payload.serviceType || "?????").slice(0, 60),
     topic,
     summary: String(payload.summary || "").slice(0, 800),
     risk_flag: riskFlag,
@@ -208,6 +208,99 @@ async function handleSpriteChatSave(request, env, user) {
   return json({ chat: result.data?.[0] });
 }
 
+function normalizeBottleContent(content) {
+  return String(content || "").replace(/\s+/g, " ").trim().slice(0, 180);
+}
+
+async function handleBottleCreate(request, env, user) {
+  const payload = await request.json().catch(() => ({}));
+  const content = normalizeBottleContent(payload.content);
+  if (!content) return json({ error: "????????" }, 400);
+  if (CRISIS_PATTERN.test(content)) {
+    return json({
+      bottle: null,
+      safety: "crisis",
+      reply: crisisReply()
+    });
+  }
+  const row = {
+    user_id: user?.id || null,
+    content,
+    mood: String(payload.mood || "").slice(0, 20) || null,
+    visibility: "public",
+    moderation_status: "approved",
+    risk_flag: false
+  };
+  const result = await supabaseFetch(env, "/rest/v1/drift_bottles", {
+    method: "POST",
+    body: JSON.stringify([row])
+  });
+  if (result.error) return json({ error: result.error }, result.status);
+  await supabaseFetch(env, "/rest/v1/island_logs", {
+    method: "POST",
+    body: JSON.stringify([{ ...row, mood: undefined }])
+  });
+  return json({ bottle: result.data?.[0], safety: "normal" });
+}
+
+async function handleRandomBottle(env) {
+  const result = await supabaseFetch(
+    env,
+    "/rest/v1/drift_bottles?select=*&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&order=created_at.desc&limit=80"
+  );
+  if (result.error) return json({ error: result.error }, result.status);
+  const bottles = result.data || [];
+  const bottle = bottles.length ? bottles[Math.floor(Math.random() * bottles.length)] : null;
+  return json({ bottle });
+}
+
+async function handleIslandLogs(env) {
+  const result = await supabaseFetch(
+    env,
+    "/rest/v1/island_logs?select=*&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&order=created_at.desc&limit=8"
+  );
+  if (result.error) return json({ error: result.error }, result.status);
+  return json({ logs: result.data || [] });
+}
+
+async function countRows(env, path) {
+  const result = await supabaseFetch(env, path);
+  if (result.error) return 0;
+  return Array.isArray(result.data) ? result.data.length : 0;
+}
+
+async function handleStats(env) {
+  const today = new Date().toISOString().slice(0, 10);
+  const todayStart = `${today}T00:00:00.000Z`;
+  const [profiles, bottles, moods, requests, moodRows] = await Promise.all([
+    countRows(env, "/rest/v1/profiles?select=id&limit=1000"),
+    countRows(env, "/rest/v1/drift_bottles?select=id&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&limit=1000"),
+    countRows(env, `/rest/v1/mood_entries?select=id&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`),
+    countRows(env, "/rest/v1/consult_requests?select=id&limit=1000"),
+    supabaseFetch(env, `/rest/v1/mood_entries?select=mood&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`)
+  ]);
+  const moodCounts = {};
+  (moodRows.data || []).forEach((entry) => {
+    const mood = entry.mood || "???";
+    moodCounts[mood] = (moodCounts[mood] || 0) + 1;
+  });
+  const total = Object.values(moodCounts).reduce((sum, count) => sum + count, 0);
+  const moodStats = Object.entries(moodCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([mood, count]) => ({ mood, count, percent: total ? Math.round((count / total) * 100) : 0 }));
+  return json({
+    source: "cloud",
+    stats: {
+      islanders: profiles,
+      bottles,
+      todayMoods: moods,
+      consultRequests: requests
+    },
+    moodStats
+  });
+}
+
 async function handleAdminRequests(request, env, user, pathname) {
   const role = await requireRole(env, user, ["admin"]);
   if (role.error) return role.error;
@@ -225,7 +318,7 @@ async function handleAdminRequests(request, env, user, pathname) {
   const id = pathname.split("/").at(-1);
   const payload = await request.json().catch(() => ({}));
   const providerId = payload.providerId;
-  if (!id || !providerId) return json({ error: "缺少线索或服务者 ID。" }, 400);
+  if (!id || !providerId) return json({ error: "???????? ID?" }, 400);
   const assignment = await supabaseFetch(env, "/rest/v1/assignments", {
     method: "POST",
     body: JSON.stringify([{ consult_request_id: id, provider_id: providerId, status: "assigned" }])
@@ -279,6 +372,10 @@ export default {
       if (pathname === "/api/tests/sessions" && request.method === "POST") return handleTestSession(request, env, user);
       if (pathname === "/api/consult-requests" && request.method === "POST") return handleConsultRequest(request, env, user);
       if (pathname === "/api/sprite-chats" && request.method === "POST") return handleSpriteChatSave(request, env, user);
+      if (pathname === "/api/bottles" && request.method === "POST") return handleBottleCreate(request, env, user);
+      if (pathname === "/api/bottles/random" && request.method === "GET") return handleRandomBottle(env);
+      if (pathname === "/api/island-logs" && request.method === "GET") return handleIslandLogs(env);
+      if (pathname === "/api/stats" && request.method === "GET") return handleStats(env);
       if (pathname === "/api/admin/requests" || pathname.startsWith("/api/admin/requests/")) return handleAdminRequests(request, env, user, pathname);
       if (pathname === "/api/provider/assignments" || pathname.startsWith("/api/provider/assignments/")) return handleProviderAssignments(request, env, user, pathname);
       return json({ error: "Not found" }, 404);

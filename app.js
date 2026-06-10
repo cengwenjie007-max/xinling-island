@@ -1,96 +1,119 @@
 const STORAGE_KEY = "xinling-island-state";
 const COMPANION_API_URL = "";
 const MAX_SPRITE_CHATS = 6;
-const CRISIS_PATTERN = /自杀|想死|不想活|活不下去|伤害自己|伤害别人|结束生命|轻生|割腕|跳楼|没必要活|无法保证安全|撑不下去/;
+const CRISIS_PATTERN = /??|??|???|????|????|????|????|??|??|??|????|??????|????/;
 
 const defaultState = {
   soul: 20,
   energy: 6,
-  badges: ["初次登岛"],
+  badges: ["????"],
   quests: {},
   moods: [],
-  bottles: ["今天也许不完美，但我已经在靠岸。"],
+  bottles: ["????????????????"],
   spriteChats: [
     {
       role: "assistant",
-      content: "欢迎来到心灵岛，先坐下来休息一下吧。"
+      content: "??????????????????"
     }
   ],
   consultIntent: {
-    service: "倾听员陪伴",
+    service: "?????",
     topic: "",
     summary: ""
   },
   lastMoodRewardDate: "",
   lastBottleRewardDate: "",
-  lastConsultRewardDate: ""
+  lastConsultRewardDate: "",
+  lastVisitDate: "",
+  visitStreak: 0,
+  testsCompleted: 0,
+  receivedBottles: [],
+  islandLogs: [
+    "???????????????",
+    "???????????????",
+    "????????????????????"
+  ]
 };
 
 const state = loadState();
-let selectedMood = { mood: "开心", energy: 8 };
-let selectedService = state.consultIntent?.service || "倾听员陪伴";
+let selectedMood = { mood: "??", energy: 8 };
+let selectedService = state.consultIntent?.service || "?????";
 let spriteMood = "idle";
+
+const seedBottles = [
+  { islanderNo: 27, content: "??????????????????" },
+  { islanderNo: 86, content: "???????????????" },
+  { islanderNo: 135, content: "???????????????" },
+  { islanderNo: 204, content: "????????????????????" }
+];
+
+const moodGroups = [
+  { key: "??", label: "??", emoji: "??", match: /??|??|??|??|??/ },
+  { key: "??", label: "??", emoji: "??", match: /??|??|??|??/ },
+  { key: "??", label: "??", emoji: "??", match: /??|??|?|???/ },
+  { key: "??", label: "??", emoji: "??", match: /??|?|?|??|??|??/ }
+];
 
 const mapPlaces = {
   pier: {
-    title: "海边码头",
-    status: "已点亮",
-    fit: "适合：第一次登岛、状态有点乱、想先做一件小事。",
-    action: "我能做什么：新手引导、今日心情打卡。",
-    unlock: "入口区域已开放。",
+    title: "????",
+    status: "???",
+    fit: "???????????????????????",
+    action: "??????????????????",
+    unlock: "????????",
     href: "#mood",
-    cta: "记录今日心情",
+    cta: "??????",
     isUnlocked: () => true
   },
   forest: {
-    title: "森林疗愈区",
-    status: "已点亮",
-    fit: "适合：焦虑、疲惫、睡前、需要慢慢安静下来。",
-    action: "我能做什么：3 分钟呼吸、正念、身体扫描。",
-    unlock: "完成一次情绪记录后，森林会变得更明亮。",
+    title: "?????",
+    status: "???",
+    fit: "?????????????????????",
+    action: "??????3 ?????????????",
+    unlock: "???????????????????",
     href: "#method",
-    cta: "进入练习",
+    cta: "????",
     isUnlocked: () => state.moods.length >= 1
   },
   plaza: {
-    title: "星光广场",
-    status: "已点亮",
-    fit: "适合：想被听见、想轻轻回应别人、想留下匿名一句话。",
-    action: "我能做什么：漂流瓶、同频留言、温柔回应。",
-    unlock: "投递一只漂流瓶后，广场会记录你的星光。",
+    title: "????",
+    status: "???",
+    fit: "?????????????????????????",
+    action: "????????????????????",
+    unlock: "???????????????????",
     href: "#community",
-    cta: "投递漂流瓶",
+    cta: "?????",
     isUnlocked: () => true
   },
   garden: {
-    title: "梦境花园",
-    status: "半开放",
-    fit: "适合：潜意识书写、梦境记录、整理反复出现的念头。",
-    action: "我能做什么：进入心理测试，完成一次深度自评。",
-    unlock: "完成一次心理测试后，可把结果写入情绪记录。",
+    title: "????",
+    status: "???",
+    fit: "????????????????????????",
+    action: "??????????????????????",
+    unlock: "??????????????????????????",
     href: "tests.html",
-    cta: "进入测试",
-    isUnlocked: () => true
+    cta: "????",
+    isUnlocked: () => state.testsCompleted >= 1 || state.bottles.length >= 2
   },
   lighthouse: {
-    title: "回忆灯塔",
-    status: "待点亮",
-    fit: "适合：回顾最近状态、整理成长档案、准备真实求助。",
-    action: "我能做什么：情绪回顾、成长档案、求助准备。",
-    unlock: "完成 3 次情绪记录后点亮灯塔。",
+    title: "????",
+    status: "???",
+    fit: "????????????????????????",
+    action: "?????????????????????",
+    unlock: "???? 3 ????? 3 ???????????",
     href: "#help",
-    cta: "查看求助灯塔",
-    isUnlocked: () => state.moods.length >= 3
+    cta: "??????",
+    isUnlocked: () => state.visitStreak >= 3 || state.moods.length >= 3
   },
   temple: {
-    title: "心灵神殿",
-    status: "待点亮",
-    fit: "适合：心理测试、咨询准备、深度探索。",
-    action: "我能做什么：心理测试、咨询预约准备、与岛上精灵对话。",
-    unlock: "心灵值达到 80 或完成新手任务后点亮神殿。",
+    title: "????",
+    status: "???",
+    fit: "??????????????????",
+    action: "??????????????????????????",
+    unlock: "????? 80??????????? 3 ???????????",
     href: "tests.html",
-    cta: "进入深度探索",
-    isUnlocked: () => state.soul >= 80 || Object.values(state.quests).filter(Boolean).length >= 3
+    cta: "??????",
+    isUnlocked: () => state.soul >= 80 || Object.values(state.quests).filter(Boolean).length >= 3 || state.testsCompleted >= 3
   }
 };
 
@@ -113,6 +136,11 @@ function normalizeState(nextState) {
     moods: Array.isArray(nextState.moods) ? nextState.moods : [],
     bottles: Array.isArray(nextState.bottles) ? nextState.bottles : [...defaultState.bottles],
     spriteChats: Array.isArray(nextState.spriteChats) ? nextState.spriteChats : [...defaultState.spriteChats],
+    lastVisitDate: typeof nextState.lastVisitDate === "string" ? nextState.lastVisitDate : "",
+    visitStreak: Math.max(0, Number(nextState.visitStreak || 0)),
+    testsCompleted: Math.max(0, Number(nextState.testsCompleted || 0)),
+    receivedBottles: Array.isArray(nextState.receivedBottles) ? nextState.receivedBottles : [],
+    islandLogs: Array.isArray(nextState.islandLogs) ? nextState.islandLogs : [...defaultState.islandLogs],
     consultIntent:
       nextState.consultIntent && typeof nextState.consultIntent === "object"
         ? { ...defaultState.consultIntent, ...nextState.consultIntent }
@@ -130,6 +158,23 @@ function clamp(value, min, max) {
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function dateOffsetKey(offset) {
+  const date = new Date();
+  date.setDate(date.getDate() + offset);
+  return date.toISOString().slice(0, 10);
+}
+
+function trackVisit() {
+  const today = todayKey();
+  if (state.lastVisitDate === today) return;
+  state.visitStreak = state.lastVisitDate === dateOffsetKey(-1) ? Number(state.visitStreak || 0) + 1 : 1;
+  state.lastVisitDate = today;
+  addSoul(3);
+  awardBadge("????");
+  if (state.visitStreak >= 3) awardBadge("???? 3 ?");
+  saveState();
 }
 
 function createElement(tag, className, text) {
@@ -170,14 +215,14 @@ function renderMoodChart() {
   const chart = document.querySelector("#mood-chart");
   const recent = state.moods.slice(-7);
   if (!recent.length) {
-    chart.replaceChildren(createElement("span", "", "暂无记录"));
+    chart.replaceChildren(createElement("span", "", "????"));
     return;
   }
   chart.replaceChildren(
     ...recent.map((entry) => {
       const bar = createElement("div", "mood-bar");
       bar.style.height = `${clamp(Number(entry.energy || 0), 1, 10) * 10}%`;
-      bar.append(createElement("span", "", entry.mood || "未命名"));
+      bar.append(createElement("span", "", entry.mood || "???"));
       return bar;
     })
   );
@@ -188,16 +233,16 @@ function renderMoodHistory() {
   if (!history) return;
   const recent = state.moods.slice(-3).reverse();
   if (!recent.length) {
-    history.replaceChildren(createElement("p", "form-hint", "最近记录会显示在这里，方便你看见自己的情绪节律。"));
+    history.replaceChildren(createElement("p", "form-hint", "????????????????????????"));
     return;
   }
-  const title = createElement("strong", "", "最近记录");
+  const title = createElement("strong", "", "????");
   const list = createElement("div", "mood-note-list");
   recent.forEach((entry) => {
     const item = createElement("article");
-    const date = entry.date ? new Date(entry.date).toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" }) : "今天";
+    const date = entry.date ? new Date(entry.date).toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" }) : "??";
     item.append(createElement("span", "", `${date} / ${entry.mood}`));
-    item.append(createElement("p", "", entry.note || "这一天只留下了一个情绪标记。"));
+    item.append(createElement("p", "", entry.note || "??????????????"));
     list.append(item);
   });
   history.replaceChildren(title, list);
@@ -205,27 +250,182 @@ function renderMoodHistory() {
 
 function renderBottles() {
   const list = document.querySelector("#bottle-list");
+  if (!list) return;
   const items = state.bottles
     .slice(-4)
     .reverse()
     .map((item) => {
       const article = createElement("article");
       article.append(document.createTextNode(item));
-      article.append(createElement("span", "", "抱抱你"));
+      article.append(createElement("span", "", "???"));
       return article;
     });
   list.replaceChildren(...items);
 }
 
+function moodGroupFor(label = "") {
+  return moodGroups.find((group) => group.match.test(label)) || moodGroups[2];
+}
+
+function localMoodStats() {
+  const today = todayKey();
+  const todayMoods = state.moods.filter((entry) => String(entry.date || "").startsWith(today));
+  const counts = new Map(moodGroups.map((group) => [group.key, 0]));
+  todayMoods.forEach((entry) => {
+    const group = moodGroupFor(entry.mood);
+    counts.set(group.key, (counts.get(group.key) || 0) + 1);
+  });
+  const total = [...counts.values()].reduce((sum, value) => sum + value, 0);
+  if (!total) {
+    return moodGroups.map((group, index) => ({
+      mood: group.label,
+      emoji: group.emoji,
+      count: 0,
+      percent: index === 0 ? 100 : 0
+    }));
+  }
+  return moodGroups.map((group) => ({
+    mood: group.label,
+    emoji: group.emoji,
+    count: counts.get(group.key) || 0,
+    percent: Math.round(((counts.get(group.key) || 0) / total) * 100)
+  }));
+}
+
+function renderMoodPulse(remoteStats) {
+  const container = document.querySelector("#mood-pulse");
+  if (!container) return;
+  const stats = Array.isArray(remoteStats) && remoteStats.length
+    ? remoteStats.map((entry) => {
+        const group = moodGroupFor(entry.mood);
+        return { mood: group.label, emoji: group.emoji, count: entry.count || 0, percent: entry.percent || 0 };
+      })
+    : localMoodStats();
+  const title = createElement("strong", "", "??????");
+  const rows = stats.map((entry) => {
+    const row = createElement("article", "mood-pulse-row");
+    row.append(createElement("span", "", `${entry.emoji} ${entry.mood}`));
+    const track = createElement("div", "mood-pulse-track");
+    const fill = createElement("i");
+    fill.style.width = `${clamp(entry.percent, 3, 100)}%`;
+    track.append(fill);
+    row.append(track, createElement("b", "", `${entry.percent}%`));
+    return row;
+  });
+  container.replaceChildren(title, ...rows);
+}
+
+function renderIslandStats(remote) {
+  const stats = remote?.stats || {
+    islanders: 128 + state.badges.length + Number(state.visitStreak || 0),
+    bottles: state.bottles.length + state.receivedBottles.length,
+    todayMoods: state.moods.filter((entry) => String(entry.date || "").startsWith(todayKey())).length,
+    consultRequests: state.consultIntent?.summary ? 1 : 0
+  };
+  const source = remote?.source === "cloud" ? "??????" : "??????";
+  const fields = [
+    ["#stat-islanders", stats.islanders],
+    ["#stat-bottles", stats.bottles],
+    ["#stat-moods", stats.todayMoods],
+    ["#stat-requests", stats.consultRequests]
+  ];
+  fields.forEach(([selector, value]) => {
+    const node = document.querySelector(selector);
+    if (node) node.textContent = Number(value || 0).toLocaleString("zh-CN");
+  });
+  const sourceNode = document.querySelector("#stats-source");
+  if (sourceNode) sourceNode.textContent = source;
+}
+
+function renderIslandLogs(remoteLogs) {
+  const container = document.querySelector("#island-logs");
+  if (!container) return;
+  const local = state.islandLogs.map((content, index) => ({ islander_no: 135 + index, content }));
+  const logs = Array.isArray(remoteLogs) && remoteLogs.length ? remoteLogs : local;
+  const title = createElement("strong", "", "????");
+  const items = logs.slice(0, 4).map((log, index) => {
+    const item = createElement("article");
+    const no = log.islander_no || log.islanderNo || 100 + index;
+    item.append(createElement("span", "", `? ${no} ???????`));
+    item.append(createElement("p", "", log.content || "???????????"));
+    return item;
+  });
+  container.replaceChildren(title, ...items);
+}
+
+function setCommunityStatus(text, tone = "normal") {
+  const status = document.querySelector("#community-status");
+  if (!status) return;
+  status.textContent = text;
+  status.dataset.tone = tone;
+}
+
+function showReceivedBottle(bottle) {
+  const panel = document.querySelector("#received-bottle");
+  if (!panel) return;
+  const no = bottle?.islander_no || bottle?.islanderNo || Math.floor(20 + Math.random() * 260);
+  panel.replaceChildren(
+    createElement("span", "", `????? ${no} ????????`),
+    createElement("p", "", bottle?.content || "??????????????")
+  );
+}
+
+async function receiveBottle() {
+  let bottle = null;
+  if (window.XinlingBackend?.isConfigured()) {
+    try {
+      const data = await XinlingBackend.getRandomBottle();
+      bottle = data?.bottle;
+    } catch (_error) {
+      bottle = null;
+    }
+  }
+  if (!bottle) {
+    const local = [
+      ...state.bottles.map((content, index) => ({ islanderNo: 300 + index, content })),
+      ...seedBottles
+    ];
+    bottle = local[Math.floor(Math.random() * local.length)];
+  }
+  showReceivedBottle(bottle);
+  state.receivedBottles.push({ content: bottle.content, date: new Date().toISOString() });
+  state.receivedBottles = state.receivedBottles.slice(-12);
+  awardBadge("?????");
+  addSoul(4);
+  saveState();
+  updateGrowth();
+  renderIslandStats();
+}
+
+async function loadCommunityData() {
+  renderIslandStats();
+  renderMoodPulse();
+  renderIslandLogs();
+  if (!window.XinlingBackend?.isConfigured()) return;
+  try {
+    const [statsData, logsData] = await Promise.all([
+      XinlingBackend.getStats(),
+      XinlingBackend.listIslandLogs()
+    ]);
+    renderIslandStats(statsData);
+    renderMoodPulse(statsData?.moodStats);
+    renderIslandLogs(logsData?.logs);
+  } catch (_error) {
+    renderIslandStats();
+    renderMoodPulse();
+    renderIslandLogs();
+  }
+}
+
 function fallbackSpriteReply(text) {
   if (CRISIS_PATTERN.test(text)) {
-    return "我很在意你现在的安全。请立刻联系身边可信任的人、当地紧急电话或医院急诊；如果可以，请现在走到有人在的地方，不要独自承受。";
+    return "????????????????????????????????????????????????????????????";
   }
-  if (/累|疲惫|困|撑|倦|耗/.test(text)) return "今天辛苦了。先允许自己停靠十分钟，岛上的风会陪你把肩膀慢慢放下来。";
-  if (/焦虑|害怕|紧张|慌|担心/.test(text)) return "焦虑像涨潮，它会来，也会退。先说出你最担心的一件小事，我们只处理这一件。";
-  if (/难过|失恋|哭|委屈|孤独/.test(text)) return "我会在这里陪你。难过不是退步，它说明这件事真的触碰到了你。";
-  if (/睡不着|失眠|噩梦/.test(text)) return "睡不着的时候，先不和自己对抗。试试把手机放远一点，慢慢呼气，比吸气长一点。";
-  return "我听见了。先把呼吸放慢一点，我们不用马上解决所有事。你愿意再告诉我一点点，最压着你的是什么吗？";
+  if (/?|??|?|?|?|?/.test(text)) return "?????????????????????????????????";
+  if (/??|??|??|?|??/.test(text)) return "????????????????????????????????????";
+  if (/??|??|?|??|??/.test(text)) return "?????????????????????????????";
+  if (/???|??|??/.test(text)) return "?????????????????????????????????????";
+  return "???????????????????????????????????????????????";
 }
 
 function trimSpriteChats() {
@@ -245,11 +445,11 @@ function renderSpriteChats() {
   const reply = document.querySelector("#sprite-reply");
   if (!log || !reply) return;
   const chats = state.spriteChats?.length ? state.spriteChats : defaultState.spriteChats;
-  reply.textContent = chats.filter((item) => item.role === "assistant").at(-1)?.content || "欢迎来到心灵岛，先坐下来休息一下吧。";
+  reply.textContent = chats.filter((item) => item.role === "assistant").at(-1)?.content || "??????????????????";
   log.replaceChildren(
     ...chats.slice(-MAX_SPRITE_CHATS).map((item) => {
       const bubble = createElement("article", `sprite-message ${item.role === "user" ? "user" : "assistant"}`);
-      bubble.append(createElement("span", "", item.role === "user" ? "你" : "萤火精灵"));
+      bubble.append(createElement("span", "", item.role === "user" ? "?" : "????"));
       bubble.append(createElement("p", "", item.content));
       return bubble;
     })
@@ -308,20 +508,20 @@ async function sendSpriteMessage() {
     const reply = fallbackSpriteReply(text);
     appendSpriteChat("assistant", reply);
     syncSpriteChat("assistant", reply);
-    setSpriteStatus("检测到安全风险：已优先显示现实求助提示，未调用 AI。", "alert");
+    setSpriteStatus("??????????????????????? AI?", "alert");
     return;
   }
   button.disabled = true;
-  setSpriteStatus("萤火精灵正在倾听...", "thinking");
+  setSpriteStatus("????????...", "thinking");
   try {
     const data = await askCompanionAI(text);
     appendSpriteChat("assistant", data.reply);
-    setSpriteStatus(data.safety === "crisis" ? "AI 返回了安全提示，请优先联系现实支持。" : "AI 陪伴已回应。", data.safety === "crisis" ? "alert" : "glow");
+    setSpriteStatus(data.safety === "crisis" ? "AI ??????????????????" : "AI ??????", data.safety === "crisis" ? "alert" : "glow");
   } catch (_error) {
     const reply = fallbackSpriteReply(text);
     appendSpriteChat("assistant", reply);
     syncSpriteChat("assistant", reply);
-    setSpriteStatus("AI Worker 暂未连接，已使用本地温柔回应。", "fallback");
+    setSpriteStatus("AI Worker ???????????????", "fallback");
   } finally {
     button.disabled = false;
   }
@@ -332,7 +532,7 @@ function renderBookingState() {
   const summary = document.querySelector("#booking-summary");
   if (!topic || !summary) return;
   topic.value = state.consultIntent.topic || "";
-  summary.textContent = state.consultIntent.summary || "选择服务并写下主题后，这里会生成一份可复制给倾听员或咨询师的摘要。";
+  summary.textContent = state.consultIntent.summary || "?????????????????????????????????";
   document.querySelectorAll(".booking-option").forEach((button) => {
     button.classList.toggle("active", button.dataset.service === selectedService);
   });
@@ -340,11 +540,11 @@ function renderBookingState() {
 
 function insightForMoods() {
   const recent = state.moods.slice(-3);
-  if (!recent.length) return "保存后，这里会出现你的情绪趋势分析。";
+  if (!recent.length) return "??????????????????";
   const average = recent.reduce((sum, item) => sum + item.energy, 0) / recent.length;
-  if (average >= 7) return "最近的情绪能量偏明亮，可以趁状态好时保存一些让你恢复的习惯。";
-  if (average >= 4) return "最近情绪有起伏，建议给自己安排一个低门槛休息动作，比如散步或早睡。";
-  return "最近能量偏低，请先照顾睡眠、饮食和安全感，不要独自硬撑太久。";
+  if (average >= 7) return "??????????????????????????????";
+  if (average >= 4) return "?????????????????????????????????";
+  return "??????????????????????????????";
 }
 
 function initSpriteScene() {
@@ -457,7 +657,7 @@ function updateMapLocks() {
     const unlocked = place.isUnlocked();
     button.classList.toggle("locked", !unlocked);
     button.classList.toggle("lit", unlocked);
-    button.setAttribute("aria-label", `${place.title}，${unlocked ? "已点亮" : "未完全点亮"}，点击查看功能卡片`);
+    button.setAttribute("aria-label", `${place.title}?${unlocked ? "???" : "?????"}?????????`);
   });
 }
 
@@ -467,23 +667,47 @@ function showMapPlace(placeId) {
   document.querySelectorAll("[data-place]").forEach((button) => {
     button.classList.toggle("active", button.dataset.place === placeId);
   });
-  document.querySelector("#map-detail-status").textContent = unlocked ? place.status : "未完全点亮";
+  document.querySelector("#map-detail-status").textContent = unlocked ? place.status : "?????";
   document.querySelector("#map-detail-title").textContent = place.title;
   document.querySelector("#map-detail-fit").textContent = place.fit;
   document.querySelector("#map-detail-action").textContent = place.action;
-  document.querySelector("#map-detail-unlock").textContent = unlocked ? "当前可以进入。继续使用会让这片区域更明亮。" : place.unlock;
+  document.querySelector("#map-detail-unlock").textContent = unlocked ? "?????????????????????" : place.unlock;
   const link = document.querySelector("#map-detail-link");
   link.textContent = place.cta;
   link.href = place.href;
   link.classList.toggle("disabled-link", !unlocked);
   link.setAttribute("aria-disabled", String(!unlocked));
+  if (placeId === "garden" && unlocked) {
+    awardBadge("??????");
+    saveState();
+    updateGrowth();
+  }
+}
+
+function updateMapWeather() {
+  const board = document.querySelector("#map-board");
+  const hint = document.querySelector("#weather-hint");
+  if (!board) return;
+  const hour = new Date().getHours();
+  const daySeed = Number(todayKey().replaceAll("-", ""));
+  const isRain = daySeed % 7 === 0;
+  const mode = isRain ? "rain" : hour >= 6 && hour < 18 ? "day" : hour >= 18 && hour < 23 ? "stars" : "night";
+  board.classList.remove("weather-day", "weather-night", "weather-rain", "weather-stars");
+  board.classList.add(`weather-${mode}`);
+  const copy = {
+    day: "??????????????????????",
+    rain: "??????????????????????",
+    stars: "????????????????????",
+    night: "?????????????????????"
+  };
+  if (hint) hint.textContent = copy[mode];
 }
 
 document.querySelectorAll("[data-quest]").forEach((input) => {
   input.addEventListener("change", () => {
     state.quests[input.dataset.quest] = input.checked;
     addSoul(input.checked ? 10 : -10);
-    if (Object.values(state.quests).filter(Boolean).length >= 3) awardBadge("完成新手任务");
+    if (Object.values(state.quests).filter(Boolean).length >= 3) awardBadge("??????");
     saveState();
     updateGrowth();
   });
@@ -502,7 +726,7 @@ document.querySelector("#save-mood").addEventListener("click", () => {
   const text = note.value.trim();
   const insight = document.querySelector("#ai-insight");
   if (!text) {
-    insight.textContent = "可以只写一句很短的话，比如“今天有点累”。给情绪一个名字，也是一种靠岸。";
+    insight.textContent = "????????????????????????????????????";
     note.focus();
     return;
   }
@@ -523,13 +747,15 @@ document.querySelector("#save-mood").addEventListener("click", () => {
     addSoul(15);
     state.lastMoodRewardDate = today;
   }
-  awardBadge("情绪记录者");
-  if (state.moods.length >= 3) awardBadge("连续靠岸");
+  awardBadge("?????");
+  if (state.moods.length >= 3) awardBadge("????");
   note.value = "";
   saveState();
   updateGrowth();
   renderMoodChart();
   renderMoodHistory();
+  renderMoodPulse();
+  renderIslandStats();
   insight.textContent = insightForMoods();
 });
 
@@ -541,22 +767,47 @@ document.querySelector("#sprite-input").addEventListener("keydown", (event) => {
   }
 });
 
-document.querySelector("#send-bottle").addEventListener("click", () => {
+document.querySelector("#send-bottle").addEventListener("click", async () => {
   const input = document.querySelector("#bottle-text");
   const text = input.value.trim();
   if (!text) return;
+  if (CRISIS_PATTERN.test(text)) {
+    setCommunityStatus("??????????????????????????????????????????????????????", "alert");
+    input.focus();
+    return;
+  }
   state.bottles.push(text.slice(0, 180));
+  state.islandLogs.unshift(text.slice(0, 180));
+  state.islandLogs = state.islandLogs.slice(0, 8);
   const today = todayKey();
   if (state.lastBottleRewardDate !== today) {
     addSoul(8);
     state.lastBottleRewardDate = today;
   }
-  awardBadge("星光漂流瓶");
+  awardBadge("?????");
   input.value = "";
   saveState();
   updateGrowth();
   renderBottles();
+  renderIslandStats();
+  renderIslandLogs();
+  setCommunityStatus("????????????", "normal");
+  if (window.XinlingBackend?.isConfigured()) {
+    try {
+      const data = await XinlingBackend.sendBottle({ content: text.slice(0, 180), mood: selectedMood.mood });
+      if (data?.safety === "crisis") {
+        setCommunityStatus(data.reply || "??????????????", "alert");
+      } else {
+        setCommunityStatus("??????????????", "normal");
+        loadCommunityData();
+      }
+    } catch (_error) {
+      setCommunityStatus("???????????????????", "soft");
+    }
+  }
 });
+
+document.querySelector("#receive-bottle")?.addEventListener("click", receiveBottle);
 
 document.querySelectorAll(".booking-option").forEach((button) => {
   button.addEventListener("click", () => {
@@ -571,14 +822,14 @@ document.querySelector("#create-booking-summary").addEventListener("click", () =
   const summary = document.querySelector("#booking-summary");
   const topic = topicInput.value.trim();
   if (!topic) {
-    summary.textContent = "可以先写一句最想被理解的事，例如：最近失眠、关系压力、工作很累。";
+    summary.textContent = "????????????????????????????????";
     topicInput.focus();
     return;
   }
   const recentMood = state.moods.at(-1);
-  const cleanTopic = topic.slice(0, 180).replace(/[。！？!?.,，、\s]+$/g, "");
-  const moodText = recentMood ? `最近一次情绪记录：${recentMood.mood}，能量 ${recentMood.energy}/10。` : "暂未记录情绪。";
-  const bookingText = `我想预约：${selectedService}。当前主题：${cleanTopic}。${moodText} 希望先获得稳定倾听、状态梳理和下一步建议。`;
+  const cleanTopic = topic.slice(0, 180).replace(/[???!?.,??\s]+$/g, "");
+  const moodText = recentMood ? `?????????${recentMood.mood}??? ${recentMood.energy}/10?` : "???????";
+  const bookingText = `?????${selectedService}??????${cleanTopic}?${moodText} ?????????????????????`;
   state.consultIntent = {
     service: selectedService,
     topic: cleanTopic,
@@ -591,7 +842,7 @@ document.querySelector("#create-booking-summary").addEventListener("click", () =
     summary: bookingText,
     source: "homepage"
   }).catch(() => {});
-  awardBadge("点亮求助灯塔");
+  awardBadge("??????");
   const today = todayKey();
   if (state.lastConsultRewardDate !== today) {
     addSoul(6);
@@ -599,7 +850,7 @@ document.querySelector("#create-booking-summary").addEventListener("click", () =
   }
   saveState();
   updateGrowth();
-  summary.textContent = `${bookingText} 摘要已生成，可复制给倾听员或咨询师。`;
+  summary.textContent = `${bookingText} ??????????????????`;
   navigator.clipboard?.writeText(bookingText).catch(() => {});
 });
 
@@ -607,6 +858,7 @@ document.querySelectorAll("[data-place]").forEach((button) => {
   button.addEventListener("click", () => showMapPlace(button.dataset.place));
 });
 
+trackVisit();
 renderQuests();
 updateGrowth();
 renderMoodChart();
@@ -616,5 +868,7 @@ renderBookingState();
 renderSpriteChats();
 document.querySelector("#ai-insight").textContent = insightForMoods();
 updateMapLocks();
+updateMapWeather();
+loadCommunityData();
 showMapPlace("pier");
 initSpriteScene();
