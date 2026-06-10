@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>???? | ????????</title>
+    <title>心灵岛屿 | 写意动漫心理空间</title>
     <meta
       name="description"
-      content="?????????????????????????????????????????????"
+      content="心灵岛屿是一个写意动漫风格的心理网站，用海岛、潮汐和灯塔隐喻情绪测试、心理咨询与自我疗愈。"
     />
     <link rel="stylesheet" href="styles.css" />
     <script src="https://unpkg.com/three@0.160.0/build/three.min.js" defer></script>
@@ -17,24 +17,24 @@
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="#top" aria-label="??????">????</a>
-      <nav class="site-nav" aria-label="???">
-        <a href="#about">????</a>
-        <a href="#guide">????</a>
-        <a href="#mood">????</a>
-        <a href="#map">????</a>
-        <a href="#method">????</a>
-        <a href="#help">????</a>
-        <a href="tests.html">????</a>
-        <a href="login.html">??</a>
+      <a class="brand" href="#top" aria-label="心灵岛屿首页">心灵岛屿</a>
+      <nav class="site-nav" aria-label="主导航">
+        <a href="#about">关于岛屿</a>
+        <a href="#guide">新手引导</a>
+        <a href="#mood">情绪记录</a>
+        <a href="#map">岛屿地图</a>
+        <a href="#method">心理技术</a>
+        <a href="#help">获得帮助</a>
+        <a href="tests.html">心理测试</a>
+        <a href="login.html">登录</a>
       </nav>
-      <a class="nav-link" href="login.html">??</a>
+      <a class="nav-link" href="login.html">登录</a>
     </header>
-    <nav class="mobile-quick-nav" aria-label="????">
-      <a href="#mood">??</a>
-      <a href="tests.html">??</a>
-      <a href="#companion">??</a>
-      <a href="#help">??</a>
+    <nav class="mobile-quick-nav" aria-label="快捷导航">
+      <a href="#mood">记录</a>
+      <a href="tests.html">测试</a>
+      <a href="#companion">陪伴</a>
+      <a href="#help">帮助</a>
     </nav>
 
     <main id="top">
@@ -43,54 +43,61 @@
         <div class="hero-overlay" aria-hidden="true"></div>
         <div class="hero-copy">
           <p class="eyebrow">ANIME MENTAL SANCTUARY</p>
-          <h1 id="hero-title">????</h1>
-          <p class="hero-text">??????????????????????????????</p>
+          <h1 id="hero-title">心灵岛屿</h1>
+          <p class="hero-text">先看见状态，再记录潮汐；需要时，灯塔会提醒你向真实的人求助。</p>
           <div class="hero-actions">
-            <a class="hero-cta" id="enter" href="tests.html">??????</a>
-            <a class="hero-cta secondary" href="#mood">??????</a>
-            <a class="hero-cta secondary" href="#help">??????</a>
+            <a class="hero-cta" id="enter" href="tests.html">先做一次自评</a>
+            <a class="hero-cta secondary" href="#mood">记录今日心情</a>
+            <a class="hero-cta secondary" href="#help">查看求助灯塔</a>
+          </div>
+          <div class="ambient-dock" aria-label="海浪声音控制">
+            <button class="sound-toggle" type="button" id="sound-toggle" aria-pressed="false">
+              <span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+              开启海浪声
+            </button>
+            <p id="sound-status">轻一点的海浪，只在你点击后响起。</p>
           </div>
         </div>
-        <div class="scroll-note">????</div>
+        <div class="scroll-note">向下探索</div>
       </section>
 
       <section class="intro" id="about" aria-labelledby="about-title">
         <p class="section-label">01 / ABOUT</p>
-        <h2 id="about-title">???????????????????</h2>
+        <h2 id="about-title">一座写意的海岛，收纳那些说不清的心事。</h2>
         <p>
-          ??????????????????????????????????????????????????????????
+          我们把心理支持做成一场温柔的登岛：情绪像海，念头像风，咨询像远处的灯塔。你不需要立刻解释清楚一切，只需要先抵达这里。
         </p>
-        <div class="path-strip" aria-label="??????">
-          <a href="tests.html"><span>01</span>????</a>
-          <a href="#mood"><span>02</span>????</a>
-          <a href="#companion"><span>03</span>????</a>
-          <a href="#help"><span>04</span>?????</a>
+        <div class="path-strip" aria-label="推荐使用路径">
+          <a href="tests.html"><span>01</span>自我测评</a>
+          <a href="#mood"><span>02</span>情绪记录</a>
+          <a href="#companion"><span>03</span>温柔陪伴</a>
+          <a href="#help"><span>04</span>必要时求助</a>
         </div>
       </section>
 
       <section class="guide" id="guide" aria-labelledby="guide-title">
         <div class="section-intro">
           <p class="section-label">02 / NEW ISLANDER</p>
-          <h2 id="guide-title">???????????????</h2>
+          <h2 id="guide-title">第一次登岛，从三个小任务开始。</h2>
         </div>
         <div class="guide-grid">
           <label class="quest-card">
             <input type="checkbox" data-quest="avatar" />
-            <span>???</span>
-            <strong>????????</strong>
-            <p>???????????????????????????</p>
+            <span>第一步</span>
+            <strong>选择你的岛民形象</strong>
+            <p>给今天的自己一个角色：海风旅人、夜航诗人或安静守林人。</p>
           </label>
           <label class="quest-card">
             <input type="checkbox" data-quest="mood" />
-            <span>???</span>
-            <strong>???????</strong>
-            <p>??????????????????????</p>
+            <span>第二步</span>
+            <strong>记录今天的心情</strong>
+            <p>把情绪放进潮汐瓶，不用解释，也不用立刻变好。</p>
           </label>
           <label class="quest-card">
             <input type="checkbox" data-quest="cabin" />
-            <span>???</span>
-            <strong>?????????</strong>
-            <p>????????????????????</p>
+            <span>第三步</span>
+            <strong>领取你的第一座小屋</strong>
+            <p>完成首日登岛后，点亮属于你的精神栖息地。</p>
           </label>
         </div>
       </section>
@@ -98,29 +105,29 @@
       <section class="growth" aria-labelledby="growth-title">
         <div>
           <p class="section-label">03 / GROWTH SYSTEM</p>
-          <h2 id="growth-title">??????????????</h2>
+          <h2 id="growth-title">每天都有一个回来岛上的理由。</h2>
         </div>
         <div class="growth-panel">
           <div class="level-ring">
             <span id="level-number">Lv.1</span>
-            <small>????</small>
+            <small>岛屿等级</small>
           </div>
           <div class="growth-stats">
             <article>
               <span id="soul-value">20</span>
-              <p>???</p>
+              <p>心灵值</p>
             </article>
             <article>
               <span id="emotion-energy">6</span>
-              <p>????</p>
+              <p>情绪能量</p>
             </article>
             <article>
               <span id="badge-count">1</span>
-              <p>??</p>
+              <p>勋章</p>
             </article>
           </div>
           <div class="badge-row" id="badge-row">
-            <span>????</span>
+            <span>初次登岛</span>
           </div>
         </div>
       </section>
@@ -128,21 +135,21 @@
       <section class="mood-lab" id="mood" aria-labelledby="mood-title">
         <div class="mood-copy">
           <p class="section-label">04 / MOOD TIDE</p>
-          <h2 id="mood-title">???????</h2>
-          <p>?????????????????????????????????????</p>
+          <h2 id="mood-title">今天心情如何？</h2>
+          <p>选择一种情绪，写下几句话。心灵岛会保存你的情绪日记，并生成最近的潮汐趋势。</p>
         </div>
         <div class="mood-console">
-          <div class="mood-options" role="radiogroup" aria-label="??????">
-            <button class="mood-button active" type="button" data-mood="??" data-energy="8">??</button>
-            <button class="mood-button" type="button" data-mood="??" data-energy="6">??</button>
-            <button class="mood-button" type="button" data-mood="??" data-energy="3">??</button>
-            <button class="mood-button" type="button" data-mood="??" data-energy="4">??</button>
+          <div class="mood-options" role="radiogroup" aria-label="选择今日心情">
+            <button class="mood-button active" type="button" data-mood="开心" data-energy="8">开心</button>
+            <button class="mood-button" type="button" data-mood="平静" data-energy="6">平静</button>
+            <button class="mood-button" type="button" data-mood="难过" data-energy="3">难过</button>
+            <button class="mood-button" type="button" data-mood="焦虑" data-energy="4">焦虑</button>
           </div>
-          <textarea id="mood-note" rows="5" placeholder="???????????????????????"></textarea>
-          <p class="form-hint">????????????????????????????</p>
-          <button class="solid-button" type="button" id="save-mood">??????</button>
-          <div class="mood-chart" id="mood-chart" aria-label="??????"></div>
-          <p class="ai-insight" id="ai-insight">??????????????????</p>
+          <textarea id="mood-note" rows="5" placeholder="写下今天发生了什么，或者只是留一句给自己的话。"></textarea>
+          <p class="form-hint">内容只保存在你的浏览器本地；清理浏览器数据后可能会消失。</p>
+          <button class="solid-button" type="button" id="save-mood">保存情绪日记</button>
+          <div class="mood-chart" id="mood-chart" aria-label="最近情绪曲线"></div>
+          <p class="ai-insight" id="ai-insight">保存后，这里会出现你的情绪趋势分析。</p>
           <div class="mood-history" id="mood-history" aria-live="polite"></div>
         </div>
       </section>
@@ -150,12 +157,12 @@
       <section class="island-map" id="map" aria-labelledby="map-title">
         <div class="section-intro">
           <p class="section-label">05 / ISLAND MAP</p>
-          <h2 id="map-title">????????????????</h2>
-          <p class="route-hint">????????????? ? ?????? ? ?????????</p>
-          <p class="weather-hint" id="weather-hint">????????...</p>
+          <h2 id="map-title">在岛屿地图里探索不同的疗愈区域。</h2>
+          <p class="route-hint">今日岛屿路线：码头记录心情 → 森林呼吸练习 → 星光广场投递漂流瓶</p>
+          <p class="weather-hint" id="weather-hint">岛屿天气正在生成...</p>
         </div>
         <div class="map-layout">
-          <div class="map-board" id="map-board" aria-label="??????????">
+          <div class="map-board" id="map-board" aria-label="可探索的心灵岛屿地图">
             <div class="map-sea" aria-hidden="true"></div>
             <span class="map-cloud cloud-one" aria-hidden="true"></span>
             <span class="map-cloud cloud-two" aria-hidden="true"></span>
@@ -168,82 +175,82 @@
               <span class="map-beach"></span>
             </div>
             <button class="map-point pier" type="button" data-place="pier">
-              <span class="map-icon">?</span>
-              <strong>????</strong>
-              <small>??</small>
+              <span class="map-icon">⚓</span>
+              <strong>海边码头</strong>
+              <small>入口</small>
             </button>
             <button class="map-point forest" type="button" data-place="forest">
-              <span class="map-icon">?</span>
-              <strong>?????</strong>
-              <small>??</small>
+              <span class="map-icon">✦</span>
+              <strong>森林疗愈区</strong>
+              <small>呼吸</small>
             </button>
             <button class="map-point plaza" type="button" data-place="plaza">
-              <span class="map-icon">?</span>
-              <strong>????</strong>
-              <small>??</small>
+              <span class="map-icon">✺</span>
+              <strong>星光广场</strong>
+              <small>同频</small>
             </button>
             <button class="map-point garden" type="button" data-place="garden">
-              <span class="map-icon">?</span>
-              <strong>????</strong>
-              <small>??</small>
+              <span class="map-icon">☾</span>
+              <strong>梦境花园</strong>
+              <small>书写</small>
             </button>
             <button class="map-point lighthouse" type="button" data-place="lighthouse">
-              <span class="map-icon">?</span>
-              <strong>????</strong>
-              <small>??</small>
+              <span class="map-icon">⌂</span>
+              <strong>回忆灯塔</strong>
+              <small>回顾</small>
             </button>
             <button class="map-point temple" type="button" data-place="temple">
-              <span class="map-icon">?</span>
-              <strong>????</strong>
-              <small>??</small>
+              <span class="map-icon">◇</span>
+              <strong>心灵神殿</strong>
+              <small>深探</small>
             </button>
           </div>
           <aside class="map-detail" id="map-detail" aria-live="polite">
-            <p class="section-label" id="map-detail-status">???</p>
-            <h3 id="map-detail-title">????</h3>
-            <p id="map-detail-fit">???????????</p>
-            <p id="map-detail-action">??????????????????</p>
-            <p class="map-unlock" id="map-detail-unlock">????????</p>
-            <a class="solid-button" id="map-detail-link" href="#mood">????</a>
+            <p class="section-label" id="map-detail-status">已点亮</p>
+            <h3 id="map-detail-title">海边码头</h3>
+            <p id="map-detail-fit">适合：刚来到岛上的你。</p>
+            <p id="map-detail-action">我能做什么：新手引导、今日心情打卡。</p>
+            <p class="map-unlock" id="map-detail-unlock">入口区域已开放。</p>
+            <a class="solid-button" id="map-detail-link" href="#mood">进入码头</a>
           </aside>
         </div>
       </section>
 
-      <section class="visual-story" aria-label="??????">
+      <section class="visual-story" aria-label="岛屿心理隐喻">
         <article>
-          <span>??</span>
-          <h3>????</h3>
-          <p>????????????????????????????</p>
+          <span>潮汐</span>
+          <h3>心理测试</h3>
+          <p>用轻量题目看见社交、压力、情绪能量和职业偏好的当前状态。</p>
         </article>
         <article>
-          <span>??</span>
-          <h3>????</h3>
-          <p>????????????????????????</p>
+          <span>泻湖</span>
+          <h3>自我整理</h3>
+          <p>把混乱感受拆成可命名、可观察、可慢慢处理的片段。</p>
         </article>
         <article>
-          <span>??</span>
-          <h3>????</h3>
-          <p>??????????????????????????????</p>
+          <span>灯塔</span>
+          <h3>求助准备</h3>
+          <p>当你需要更稳定的陪伴，先整理主题、状态和下一步可以联系的人。</p>
         </article>
       </section>
 
       <section class="method" id="method" aria-labelledby="method-title">
         <div class="method-copy">
           <p class="section-label">02 / METHOD</p>
-          <h2 id="method-title">?????????????????</h2>
+          <h2 id="method-title">与潜意识对话，不急着给情绪下结论。</h2>
         </div>
         <div class="method-list">
           <div>
-            <strong>?????</strong>
-            <p>???????????????????????????</p>
+            <strong>情绪潮汐图</strong>
+            <p>从社交焦虑、压力负荷和情绪能量开始，形成个人情绪节律。</p>
           </div>
           <div>
-            <strong>?????</strong>
-            <p>?????????????????????????</p>
+            <strong>岛屿练习室</strong>
+            <p>呼吸、书写、身体扫描与正念练习，适合日常碎片时间。</p>
           </div>
           <div>
-            <strong>????</strong>
-            <p>?????????????????????????????????????????</p>
+            <strong>灯塔咨询</strong>
+            <p>本站暂不提供真实预约；你可以先完成自评，再带着结果去寻找学校、医院或正规咨询资源。</p>
           </div>
         </div>
       </section>
@@ -251,29 +258,29 @@
       <section class="companion" id="companion" aria-labelledby="companion-title">
         <div class="companion-copy">
           <p class="section-label">07 / AI COMPANION</p>
-          <h2 id="companion-title">??????????????</h2>
-          <p>???????? AI ?????????????????????????????</p>
+          <h2 id="companion-title">岛上精灵，会先接住你的疲惫。</h2>
+          <p>萤火精灵可以接入 AI 陪你整理当下感受。它不能替代心理咨询、医学诊断或紧急帮助。</p>
         </div>
         <div class="chat-box">
-          <p class="safety-note">???????????????????????????????????????????????????????????</p>
-          <div class="sprite-stage" id="sprite-stage" aria-label="???????">
+          <p class="safety-note">如果你正在经历强烈危险感、伤害自己的想法，或担心自己无法保持安全，请立刻联系当地紧急电话、医院急诊，或身边可信任的人。</p>
+          <div class="sprite-stage" id="sprite-stage" aria-label="会动的萤火精灵">
             <canvas id="sprite-canvas"></canvas>
             <div class="sprite-fallback" aria-hidden="true">
-              <span>?</span>
+              <span>萤</span>
             </div>
           </div>
           <div class="sprite-card">
-            <span class="sprite-orb">?</span>
+            <span class="sprite-orb">萤</span>
             <div>
-              <strong>????</strong>
-              <p id="sprite-reply">??????????????????</p>
+              <strong>萤火精灵</strong>
+              <p id="sprite-reply">欢迎来到心灵岛，先坐下来休息一下吧。</p>
             </div>
           </div>
           <div class="sprite-log" id="sprite-log" aria-live="polite"></div>
-          <p class="sprite-status" id="sprite-status" aria-live="polite">??????????AI Worker ??????????? fallback?</p>
+          <p class="sprite-status" id="sprite-status" aria-live="polite">本地安全守护已开启。AI Worker 未配置时会自动使用温柔 fallback。</p>
           <div class="chat-input-row">
-            <input id="sprite-input" type="text" maxlength="500" placeholder="?????????" />
-            <button class="solid-button" type="button" id="send-sprite">??</button>
+            <input id="sprite-input" type="text" maxlength="500" placeholder="例如：今天工作好累" />
+            <button class="solid-button" type="button" id="send-sprite">倾诉</button>
           </div>
         </div>
       </section>
@@ -281,96 +288,118 @@
       <section class="community" id="community" aria-labelledby="community-title">
         <div>
           <p class="section-label">08 / DRIFT BOTTLE</p>
-          <h2 id="community-title">??????????</h2>
-          <p>???????????????????????????????????????????????</p>
-          <div class="island-stats" id="island-stats" aria-label="??????">
+          <h2 id="community-title">把一句话放进漂流瓶。</h2>
+          <p>匿名投递、随机接收、看见今日岛民心情。这里不是普通评论区，而是让陌生人轻轻互相照亮的星光广场。</p>
+          <div class="island-stats" id="island-stats" aria-label="心灵岛屿统计">
             <article>
               <span id="stat-islanders">--</span>
-              <p>?????</p>
+              <p>累计登岛者</p>
             </article>
             <article>
               <span id="stat-bottles">--</span>
-              <p>???</p>
+              <p>漂流瓶</p>
             </article>
             <article>
               <span id="stat-moods">--</span>
-              <p>????</p>
+              <p>今日心情</p>
             </article>
             <article>
               <span id="stat-requests">--</span>
-              <p>????</p>
+              <p>求助线索</p>
             </article>
           </div>
-          <p class="stats-source" id="stats-source">??????</p>
+          <p class="stats-source" id="stats-source">本机岛屿数据</p>
         </div>
         <div class="bottle-panel">
-          <textarea id="bottle-text" rows="4" placeholder="???????????????"></textarea>
-          <p class="form-hint dark">????????????????????????????????????</p>
+          <textarea id="bottle-text" rows="4" placeholder="匿名写下今天想被听见的一句话。"></textarea>
+          <p class="form-hint dark">登录并配置后端后会同步到云端；未登录或后端未配置时，只保存在本机浏览器。</p>
           <p class="community-status" id="community-status" aria-live="polite"></p>
           <div class="community-actions">
-            <button class="solid-button" type="button" id="send-bottle">??????</button>
-            <button class="ghost-button" type="button" id="receive-bottle">?????</button>
+            <button class="solid-button" type="button" id="send-bottle">投向星光广场</button>
+            <button class="ghost-button" type="button" id="receive-bottle">收到漂流瓶</button>
           </div>
           <article class="received-bottle" id="received-bottle" aria-live="polite">
-            <span>???????????</span>
-            <p>???????????????????????</p>
+            <span>等待海潮送来一只漂流瓶</span>
+            <p>点击“收到漂流瓶”，随机读到一句匿名岛民留言。</p>
           </article>
-          <div class="mood-pulse" id="mood-pulse" aria-label="??????"></div>
-          <div class="island-logs" id="island-logs" aria-label="????"></div>
+          <div class="mood-pulse" id="mood-pulse" aria-label="今日岛民心情"></div>
+          <div class="island-logs" id="island-logs" aria-label="岛民日志"></div>
           <div class="bottle-list" id="bottle-list"></div>
+        </div>
+      </section>
+
+      <section class="night-harbor" id="treehole" aria-labelledby="treehole-title">
+        <div class="night-copy">
+          <p class="section-label">09 / NIGHT HARBOR</p>
+          <h2 id="treehole-title">晚安树洞，把今晚放轻一点。</h2>
+          <p>这里适合写一句不需要被评价的话。它会留在你的本机岛屿，像睡前放在枕边的一盏小灯。</p>
+          <article class="goodnight-card" id="goodnight-card" aria-live="polite">
+            <span>今晚的岛屿留言</span>
+            <p id="goodnight-message">你已经抵达这里了。先把今天交给海风，剩下的明天再慢慢整理。</p>
+          </article>
+        </div>
+        <div class="treehole-panel">
+          <textarea id="treehole-text" rows="5" maxlength="220" placeholder="匿名写给今晚的自己：不用完整，也不用漂亮。"></textarea>
+          <p class="form-hint dark">如果内容里出现安全风险信号，心灵岛会优先提醒你联系现实中的人，而不是把它当作普通留言。</p>
+          <div class="community-actions">
+            <button class="solid-button" type="button" id="save-treehole">放进晚安树洞</button>
+            <button class="ghost-button" type="button" id="new-goodnight">换一句晚安</button>
+          </div>
+          <p class="community-status" id="treehole-status" aria-live="polite"></p>
+          <div class="treehole-list" id="treehole-list" aria-label="最近晚安树洞"></div>
         </div>
       </section>
 
       <section class="help" id="help" aria-labelledby="help-title">
         <p class="section-label">09 / BRAND STORY</p>
-        <h2>?????</h2>
+        <h2>关于心灵岛</h2>
         <p class="story-text">
-          ????????????????????????????????????????????????????????????????
+          心灵岛诞生于一个焦虑的夜晚。我们希望每个人都能拥有一片属于自己的精神栖息地：在这里记录情绪，理解自己，也在需要时找到同频的陪伴。
         </p>
         <p class="section-label">10 / HELP</p>
-        <h2 id="help-title">??????????????????</h2>
+        <h2 id="help-title">当你想获得帮助，可以先点亮这座灯塔。</h2>
         <p class="story-text">
-          ?????????????????????????????????????????????????????????????
+          心灵岛屿会先帮你把状态整理成清楚的求助主题：适合倾听员陪伴的问题，可以先被接住；需要更深入处理的问题，再进入心理咨询准备。
         </p>
         <div class="help-grid">
           <article class="help-card">
-            <span>????</span>
-            <p>????????????????????????????????????????</p>
+            <span>情绪倾听</span>
+            <p>适合近期委屈、孤独、压力大，想先被认真听见的人。目标是陪你说清楚，不急着给结论。</p>
           </article>
           <article class="help-card">
-            <span>????</span>
-            <p>??????????????????????????????????????????</p>
+            <span>心理咨询</span>
+            <p>适合低落、焦虑、失眠、关系压力持续影响生活的人。建议带着测试结果和最近状态一起沟通。</p>
           </article>
           <article class="help-card urgent">
-            <span>????</span>
-            <p>?????????????????????????????????????????</p>
+            <span>紧急情况</span>
+            <p>如果你担心自己或他人马上有危险，请优先联系当地紧急电话、医院急诊或身边可信任的人。</p>
           </article>
         </div>
         <div class="booking-panel" aria-labelledby="booking-title">
           <div>
             <p class="section-label">MATCHING</p>
-            <h3 id="booking-title">????????????????</h3>
-            <p>????????????????????????????????????????????????????????????</p>
+            <h3 id="booking-title">把测试结果变成一次可开口的求助。</h3>
+            <p>选择你现在更需要的支持，写下最想聊的一句话，心灵岛会生成一份预约摘要。正式上线时，这里可以直接接入微信、表单或支付链接。</p>
           </div>
           <div class="booking-form">
-            <div class="booking-options" role="radiogroup" aria-label="??????">
-              <button class="booking-option active" type="button" data-service="?????">?????</button>
-              <button class="booking-option" type="button" data-service="????">????</button>
-              <button class="booking-option" type="button" data-service="??????">??????</button>
+            <div class="booking-options" role="radiogroup" aria-label="选择支持方式">
+              <button class="booking-option active" type="button" data-service="倾听员陪伴">倾听员陪伴</button>
+              <button class="booking-option" type="button" data-service="心理咨询">心理咨询</button>
+              <button class="booking-option" type="button" data-service="测试结果解读">测试结果解读</button>
             </div>
-            <textarea id="booking-topic" rows="4" placeholder="????????????????????????"></textarea>
-            <button class="solid-button" type="button" id="create-booking-summary">?????????</button>
-            <p class="booking-summary" id="booking-summary" aria-live="polite">?????????????????????????????????</p>
+            <textarea id="booking-topic" rows="4" placeholder="例如：最近压力很大，睡眠变差，想先有人听我说说。"></textarea>
+            <button class="solid-button" type="button" id="create-booking-summary">生成并复制预约摘要</button>
+            <p class="booking-summary" id="booking-summary" aria-live="polite">选择服务并写下主题后，这里会生成一份可复制给倾听员或咨询师的摘要。</p>
           </div>
         </div>
         <div class="help-actions">
           <a class="action-card" href="tests.html">
-            <span>????</span>
-            <strong>????????</strong>
+            <span>心理测试</span>
+            <strong>进入站内测试中心</strong>
           </a>
           <a class="action-card" href="#help">
-            <span>????</span>
-            <strong>?????????????????</strong>
+            <span>咨询转化</span>
+            <strong>生成预约摘要，匹配倾听员或心理咨询</strong>
           </a>
         </div>
       </section>

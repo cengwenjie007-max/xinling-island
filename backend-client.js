@@ -19,12 +19,12 @@
   }
 
   async function signIn(email, password) {
-    if (!client) throw new Error("Supabase ?????");
+    if (!client) throw new Error("Supabase 尚未配置。");
     return client.auth.signInWithPassword({ email, password });
   }
 
   async function signUp(email, password, nickname) {
-    if (!client) throw new Error("Supabase ?????");
+    if (!client) throw new Error("Supabase 尚未配置。");
     return client.auth.signUp({
       email,
       password,
@@ -38,7 +38,7 @@
   }
 
   async function apiFetch(path, options = {}) {
-    if (!isConfigured()) throw new Error("?? API ?????");
+    if (!isConfigured()) throw new Error("后端 API 尚未配置。");
     const session = await getSession();
     const headers = {
       "Content-Type": "application/json",
@@ -50,7 +50,7 @@
       headers
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || `API ?????${response.status}`);
+    if (!response.ok) throw new Error(data.error || `API 请求失败：${response.status}`);
     return data;
   }
 
