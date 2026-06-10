@@ -609,6 +609,23 @@ function showResult() {
   if (criticalSignal) adviceItems.unshift(crisis);
   advice.replaceChildren(...adviceItems, renderStandardInfo(test, result, score));
   renderConsultMatch(test, score, criticalSignal);
+  window.XinlingBackend?.saveTestSession?.({
+    testId: test.id,
+    testName: test.name,
+    score,
+    maxScore: test.maxScore,
+    resultTitle: result.title,
+    riskFlag: criticalSignal,
+    report: {
+      standardName: test.standardName,
+      standardVersion: test.standardVersion,
+      category: test.category,
+      audience: test.audience,
+      cutoffs: test.cutoffs,
+      resultSummary: result.summary,
+      subscales: getSubscaleLines(test)
+    }
+  }).catch(() => {});
   resultPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
