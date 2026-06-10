@@ -1721,6 +1721,11 @@ body {
   background: transparent;
 }
 
+.result-source .subscale-line {
+  color: var(--deep);
+  font-weight: 780;
+}
+
 .result-source a {
   width: fit-content;
   color: var(--sea);
