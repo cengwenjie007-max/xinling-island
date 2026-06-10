@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>心灵岛屿 | 服务者后台</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="backend-config.js" defer></script>
+    <script src="backend-client.js" defer></script>
+    <script src="provider.js" defer></script>
+  </head>
+  <body class="portal-page">
+    <header class="site-header tests-header">
+      <a class="brand" href="index.html">心灵岛屿</a>
+      <nav class="site-nav" aria-label="后台导航">
+        <a href="login.html">登录</a>
+        <a href="admin.html">管理员后台</a>
+        <a href="tests.html">心理测试</a>
+      </nav>
+      <a class="nav-link" href="index.html">首页</a>
+    </header>
+    <main class="portal-shell wide">
+      <section class="portal-card">
+        <p class="section-label">PROVIDER</p>
+        <h1>倾听员 / 咨询师工作台</h1>
+        <p>查看管理员分配给你的线索，并标记联系进度。你只能看到被分配的内容。</p>
+        <button class="solid-button" type="button" id="load-provider-assignments">刷新分配</button>
+        <div class="portal-list" id="provider-assignment-list"></div>
+        <p class="booking-summary" id="provider-status-text" aria-live="polite">正在等待加载。</p>
+      </section>
+    </main>
+  </body>
+</html>
