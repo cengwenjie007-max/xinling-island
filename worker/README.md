@@ -6,19 +6,32 @@
 
 1. 注册或登录 Cloudflare。
 2. 创建一个 Worker，并启用 Workers AI binding，变量名使用 `AI`。
-3. 将 `companion-worker.js` 的内容粘贴到 Worker。
-4. 部署后得到类似 `https://xinling-companion.your-name.workers.dev` 的地址。
-5. 在项目根目录 `app.js` 中设置：
+3. 配置 Worker 环境变量：
+
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+4. 将 `companion-worker.js` 的内容粘贴到 Worker。
+5. 部署后得到类似 `https://xinling-companion.your-name.workers.dev` 的地址。
+6. 在项目根目录 `backend-config.js` 中设置：
 
 ```js
-const COMPANION_API_URL = "https://xinling-companion.your-name.workers.dev/api/companion";
+window.XINLING_BACKEND_CONFIG = {
+  supabaseUrl: "https://xxxx.supabase.co",
+  supabaseAnonKey: "你的 anon public key",
+  apiBaseUrl: "https://xinling-companion.your-name.workers.dev"
+};
 ```
 
-如果 Worker 没有做路径路由，也可以直接填 Worker 根地址：
+前端会请求：
 
-```js
-const COMPANION_API_URL = "https://xinling-companion.your-name.workers.dev";
-```
+- `/api/companion`
+- `/api/moods`
+- `/api/tests/sessions`
+- `/api/consult-requests`
+- `/api/admin/requests`
+- `/api/provider/assignments`
 
 ## 安全边界
 
