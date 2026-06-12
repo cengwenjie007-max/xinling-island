@@ -45,6 +45,7 @@ let spriteMood = "idle";
 let oceanAudio = null;
 let oceanSoundOn = false;
 let oceanUnlockBound = false;
+let seagullTimer = null;
 
 const seedBottles = [
   { islanderNo: 27, content: "今天很难，但我愿意再给自己一点时间。" },
@@ -556,6 +557,51 @@ function createOceanAudio() {
   return { context, mainGain };
 }
 
+function playSeagullCall() {
+  if (!oceanAudio || !oceanSoundOn) return;
+  const { context } = oceanAudio;
+  const now = context.currentTime;
+  const output = context.createGain();
+  const filter = context.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = 1800 + Math.random() * 420;
+  filter.Q.value = 5.4;
+  output.gain.setValueAtTime(0.0001, now);
+  output.gain.exponentialRampToValueAtTime(0.035, now + 0.08);
+  output.gain.exponentialRampToValueAtTime(0.006, now + 0.52);
+  output.gain.exponentialRampToValueAtTime(0.0001, now + 1.18);
+  filter.connect(output);
+  output.connect(context.destination);
+
+  const makeVoice = (start, base, peak, end, duration, gainScale = 1) => {
+    const oscillator = context.createOscillator();
+    const voiceGain = context.createGain();
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(base, start);
+    oscillator.frequency.exponentialRampToValueAtTime(peak, start + duration * 0.32);
+    oscillator.frequency.exponentialRampToValueAtTime(end, start + duration);
+    voiceGain.gain.setValueAtTime(0.0001, start);
+    voiceGain.gain.exponentialRampToValueAtTime(0.9 * gainScale, start + 0.04);
+    voiceGain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    oscillator.connect(voiceGain);
+    voiceGain.connect(filter);
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.04);
+  };
+
+  makeVoice(now, 760, 1380, 940, 0.44, 0.7);
+  makeVoice(now + 0.34, 620, 1120, 780, 0.62, 0.46);
+}
+
+function scheduleSeagulls() {
+  window.clearTimeout(seagullTimer);
+  if (!oceanSoundOn) return;
+  seagullTimer = window.setTimeout(() => {
+    playSeagullCall();
+    scheduleSeagulls();
+  }, 8000 + Math.random() * 10000);
+}
+
 function setOceanStatus(message, active = false) {
   const status = document.querySelector("#sound-status");
   const indicator = document.querySelector("#sound-indicator");
@@ -593,18 +639,20 @@ async function startOceanSound({ fromUserGesture = false } = {}) {
     state.soundEnabled = true;
     saveState();
     hideSoundUnlockPrompt();
-    setOceanStatus("海浪声已经响起。现在的声音会比之前更明显。", true);
+    setOceanStatus("海风、浪声与远处的海鸥正在陪你靠岸。", true);
+    scheduleSeagulls();
     return true;
   } catch (_error) {
     oceanSoundOn = false;
-    setOceanStatus(fromUserGesture ? "海浪声暂时没有启动，请再点击一次进入按钮。" : "浏览器拦截了自动播放，点击进入后就能听见海浪。", false);
+    window.clearTimeout(seagullTimer);
+    setOceanStatus(fromUserGesture ? "海岛环境声暂时没有启动，请再点击一次进入按钮。" : "点击进入后，海浪和海鸥声会在岛边响起。", false);
     showSoundUnlockPrompt();
     return false;
   }
 }
 
 function initOceanSoundAutoplay() {
-  setOceanStatus("正在尝试让海浪自动响起。", false);
+  setOceanStatus("正在唤起岛边的海风与浪声。", false);
   startOceanSound();
   const unlock = () => {
     if (!oceanSoundOn) startOceanSound({ fromUserGesture: true });
@@ -618,7 +666,7 @@ function initOceanSoundAutoplay() {
 }
 
 function renderSoundControl() {
-  setOceanStatus(state.soundEnabled ? "正在恢复海浪环境音。" : "正在尝试让海浪自动响起。", false);
+  setOceanStatus(state.soundEnabled ? "正在恢复岛边的海风、浪声与海鸥。" : "正在唤起岛边的海风与浪声。", false);
 }
 
 function fallbackSpriteReply(text) {
