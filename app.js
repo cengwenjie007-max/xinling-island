@@ -28,6 +28,8 @@ const defaultState = {
   visitStreak: 0,
   testsCompleted: 0,
   receivedBottles: [],
+  moodWallPosts: [],
+  lastMoodWallRewardDate: "",
   islanderRole: "",
   ritualMood: null,
   firstCabinLit: false,
@@ -56,6 +58,12 @@ const seedBottles = [
   { islanderNo: 86, content: "愿你今晚能睡一个没有自责的觉。" },
   { islanderNo: 135, content: "愿所有焦虑的人都能被温柔对待。" },
   { islanderNo: 204, content: "如果暂时看不见路，就先看见脚下这一小步。" }
+];
+
+const seedMoodWallPosts = [
+  { islander_no: 42, mood: "平静", content: "今天没有变得很厉害，但我终于愿意慢一点了。", created_at: new Date().toISOString() },
+  { islander_no: 118, mood: "难过", content: "把难过说出来以后，好像海风也轻了一点。", created_at: new Date().toISOString() },
+  { islander_no: 207, mood: "开心", content: "今天收到一句温柔的话，想把它也留在岛上。", created_at: new Date().toISOString() }
 ];
 
 const moodGroups = [
@@ -159,6 +167,8 @@ function normalizeState(nextState) {
     visitStreak: Math.max(0, Number(nextState.visitStreak || 0)),
     testsCompleted: Math.max(0, Number(nextState.testsCompleted || 0)),
     receivedBottles: Array.isArray(nextState.receivedBottles) ? nextState.receivedBottles : [],
+    moodWallPosts: Array.isArray(nextState.moodWallPosts) ? nextState.moodWallPosts : [],
+    lastMoodWallRewardDate: typeof nextState.lastMoodWallRewardDate === "string" ? nextState.lastMoodWallRewardDate : "",
     islanderRole: typeof nextState.islanderRole === "string" ? nextState.islanderRole : (nextState.quests?.avatar ? "海风旅人" : ""),
     ritualMood:
       nextState.ritualMood && typeof nextState.ritualMood === "object"
@@ -391,17 +401,22 @@ function renderMoodChart() {
   const chart = document.querySelector("#mood-chart");
   const recent = state.moods.slice(-7);
   if (!recent.length) {
-    chart.replaceChildren(createElement("span", "", "暂无记录"));
+    chart.replaceChildren(createElement("span", "", "潮汐线还很安静，保存第一篇日记后会出现。"));
     return;
   }
-  chart.replaceChildren(
-    ...recent.map((entry) => {
-      const bar = createElement("div", "mood-bar");
-      bar.style.height = `${clamp(Number(entry.energy || 0), 1, 10) * 10}%`;
-      bar.append(createElement("span", "", entry.mood || "未命名"));
-      return bar;
-    })
-  );
+  const title = createElement("strong", "", "最近 7 次心情潮汐");
+  const tide = createElement("div", "mood-tide-line");
+  recent.forEach((entry, index) => {
+    const shell = createElement("article", "mood-shell");
+    const energy = clamp(Number(entry.energy || 0), 1, 10);
+    shell.style.setProperty("--energy", `${energy * 7}px`);
+    shell.style.setProperty("--delay", `${index * 70}ms`);
+    shell.append(createElement("span", "", moodGroupFor(entry.mood).emoji));
+    shell.append(createElement("b", "", entry.mood || "未命名"));
+    shell.append(createElement("small", "", `${energy}/10`));
+    tide.append(shell);
+  });
+  chart.replaceChildren(title, tide);
 }
 
 function renderMoodHistory() {
@@ -412,7 +427,7 @@ function renderMoodHistory() {
     history.replaceChildren(createElement("p", "form-hint", "最近记录会显示在这里，方便你看见自己的情绪节律。"));
     return;
   }
-  const title = createElement("strong", "", "最近记录");
+  const title = createElement("strong", "", "我的潮汐日记");
   const list = createElement("div", "mood-note-list");
   recent.forEach((entry) => {
     const item = createElement("article");
@@ -422,6 +437,55 @@ function renderMoodHistory() {
     list.append(item);
   });
   history.replaceChildren(title, list);
+}
+
+function setMoodWallStatus(text, tone = "normal") {
+  const status = document.querySelector("#mood-wall-status");
+  if (!status) return;
+  status.textContent = text;
+  status.dataset.tone = tone;
+}
+
+function renderMoodWall(posts, source = "local") {
+  const wall = document.querySelector("#mood-wall");
+  if (!wall) return;
+  const sourceNode = document.querySelector("#mood-wall-source");
+  if (sourceNode) sourceNode.textContent = source === "cloud" ? "云端岛民树洞" : "本机预览模式";
+  const localPosts = [
+    ...state.moodWallPosts.slice(-8).reverse(),
+    ...seedMoodWallPosts
+  ];
+  const list = Array.isArray(posts) && posts.length ? posts : localPosts;
+  const title = createElement("strong", "", "岛民树洞海岸");
+  const hint = createElement("p", "form-hint", source === "cloud" ? "这里展示已通过安全筛选的匿名公开留言。" : "当前展示本机预览与精选留言；配置后端后会显示云端公开树洞。");
+  const shore = createElement("div", "mood-wall-shore");
+  list.slice(0, 8).forEach((post, index) => {
+    const item = createElement("article", "mood-wall-post");
+    const no = post.islander_no || post.islanderNo || 500 + index;
+    const mood = post.mood || "未命名";
+    const time = post.created_at || post.date;
+    const date = time ? new Date(time).toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" }) : "今天";
+    item.append(createElement("span", "", `第 ${no} 位岛民 / ${mood} / ${date}`));
+    item.append(createElement("p", "", post.content || "愿你在这里被轻轻接住。"));
+    shore.append(item);
+  });
+  wall.replaceChildren(title, hint, shore);
+}
+
+async function loadMoodWallData() {
+  renderMoodWall();
+  if (!window.XinlingBackend?.isConfigured()) {
+    setMoodWallStatus("当前是本机预览模式；配置后端后，登录岛民可匿名公开留言。");
+    return;
+  }
+  try {
+    const data = await XinlingBackend.listMoodWallPosts();
+    renderMoodWall(data?.posts, "cloud");
+    setMoodWallStatus("云端树洞已同步。你发布的公开留言会匿名显示给其他岛民。");
+  } catch (_error) {
+    renderMoodWall();
+    setMoodWallStatus("云端树洞暂时没有靠岸，先显示本机预览。", "alert");
+  }
 }
 
 function renderBottles() {
@@ -446,8 +510,9 @@ function moodGroupFor(label = "") {
 function localMoodStats() {
   const today = todayKey();
   const todayMoods = state.moods.filter((entry) => String(entry.date || "").startsWith(today));
+  const todayWallPosts = state.moodWallPosts.filter((entry) => String(entry.date || entry.created_at || "").startsWith(today));
   const counts = new Map(moodGroups.map((group) => [group.key, 0]));
-  todayMoods.forEach((entry) => {
+  [...todayMoods, ...todayWallPosts].forEach((entry) => {
     const group = moodGroupFor(entry.mood);
     counts.set(group.key, (counts.get(group.key) || 0) + 1);
   });
@@ -495,7 +560,9 @@ function renderIslandStats(remote) {
   const stats = remote?.stats || {
     islanders: 128 + state.badges.length + Number(state.visitStreak || 0),
     bottles: state.bottles.length + state.receivedBottles.length,
-    todayMoods: state.moods.filter((entry) => String(entry.date || "").startsWith(todayKey())).length,
+    todayMoods:
+      state.moods.filter((entry) => String(entry.date || "").startsWith(todayKey())).length +
+      state.moodWallPosts.filter((entry) => String(entry.date || entry.created_at || "").startsWith(todayKey())).length,
     consultRequests: state.consultIntent?.summary ? 1 : 0
   };
   const source = remote?.source === "cloud" ? "云端岛民数据" : "本机岛屿数据";
@@ -584,6 +651,7 @@ async function loadCommunityData() {
   renderIslandStats();
   renderMoodPulse();
   renderIslandLogs();
+  loadMoodWallData();
   if (!window.XinlingBackend?.isConfigured()) return;
   try {
     const [statsData, logsData] = await Promise.all([
@@ -1186,6 +1254,73 @@ document.querySelector("#save-mood").addEventListener("click", () => {
   renderMoodPulse();
   renderIslandStats();
   insight.textContent = insightForMoods();
+});
+
+document.querySelector("#publish-mood-wall")?.addEventListener("click", async () => {
+  const input = document.querySelector("#mood-wall-text");
+  const text = String(input?.value || "").replace(/\s+/g, " ").trim().slice(0, 180);
+  if (!text) {
+    setMoodWallStatus("可以只留一句很短的话，比如“今天有点累，但我还在靠岸”。", "alert");
+    input?.focus();
+    return;
+  }
+  if (CRISIS_PATTERN.test(text)) {
+    setMoodWallStatus("这句话里出现了安全风险信号。请先联系身边可信任的人、当地紧急电话或线下医疗资源；它不会进入公开树洞。", "alert");
+    input?.focus();
+    return;
+  }
+
+  if (window.XinlingBackend?.isConfigured()) {
+    const user = await XinlingBackend.getUser?.().catch(() => null);
+    if (!user) {
+      setMoodWallStatus("登录后才能把这句话匿名放到云端树洞；私人日记仍可在本机保存。", "alert");
+      return;
+    }
+    try {
+      setMoodWallStatus("正在把这句话放到树洞海岸...");
+      const data = await XinlingBackend.publishMoodWallPost({ mood: selectedMood.mood, content: text });
+      if (data?.safety === "crisis") {
+        setMoodWallStatus(data.reply || "这句话不会进入公开树洞，请优先保证自己的安全。", "alert");
+        return;
+      }
+      input.value = "";
+      const today = todayKey();
+      if (state.lastMoodWallRewardDate !== today) {
+        addSoul(8);
+        state.lastMoodWallRewardDate = today;
+      }
+      awardBadge("树洞回声");
+      saveState();
+      updateGrowth();
+      await loadMoodWallData();
+      await loadCommunityData();
+      setMoodWallStatus("已匿名放到树洞海岸，其他岛民可以看见这句话。");
+      return;
+    } catch (_error) {
+      setMoodWallStatus("云端树洞暂时没有回应，已切换成本机预览。", "alert");
+    }
+  }
+
+  state.moodWallPosts.push({
+    islanderNo: 600 + state.moodWallPosts.length,
+    mood: selectedMood.mood,
+    content: text,
+    date: new Date().toISOString()
+  });
+  state.moodWallPosts = state.moodWallPosts.slice(-12);
+  input.value = "";
+  const today = todayKey();
+  if (state.lastMoodWallRewardDate !== today) {
+    addSoul(5);
+    state.lastMoodWallRewardDate = today;
+  }
+  awardBadge("树洞回声");
+  saveState();
+  updateGrowth();
+  renderMoodWall();
+  renderMoodPulse();
+  renderIslandStats();
+  setMoodWallStatus("已加入本机预览树洞；配置后端后可发布到云端让其他岛民看见。");
 });
 
 document.querySelector("#send-sprite").addEventListener("click", sendSpriteMessage);

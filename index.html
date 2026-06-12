@@ -183,18 +183,39 @@
           <p>选择一种情绪，写下几句话。心灵岛会保存你的情绪日记，并生成最近的潮汐趋势。</p>
         </div>
         <div class="mood-console">
-          <div class="mood-options" role="radiogroup" aria-label="选择今日心情">
-            <button class="mood-button active" type="button" data-mood="开心" data-energy="8">开心</button>
-            <button class="mood-button" type="button" data-mood="平静" data-energy="6">平静</button>
-            <button class="mood-button" type="button" data-mood="难过" data-energy="3">难过</button>
-            <button class="mood-button" type="button" data-mood="焦虑" data-energy="4">焦虑</button>
+          <div class="mood-tide-card private-tide">
+            <div class="mood-card-head">
+              <span>私人潮汐日记</span>
+              <strong>只给自己看</strong>
+            </div>
+            <div class="mood-options" role="radiogroup" aria-label="选择今日心情">
+              <button class="mood-button active" type="button" data-mood="开心" data-energy="8">开心</button>
+              <button class="mood-button" type="button" data-mood="平静" data-energy="6">平静</button>
+              <button class="mood-button" type="button" data-mood="难过" data-energy="3">难过</button>
+              <button class="mood-button" type="button" data-mood="焦虑" data-energy="4">焦虑</button>
+            </div>
+            <textarea id="mood-note" rows="5" placeholder="写下今天发生了什么，或者只是留一句给自己的话。"></textarea>
+            <p class="form-hint">私人日记不会出现在公开树洞；登录后可同步到你的账号。</p>
+            <button class="solid-button" type="button" id="save-mood">保存私人潮汐日记</button>
           </div>
-          <textarea id="mood-note" rows="5" placeholder="写下今天发生了什么，或者只是留一句给自己的话。"></textarea>
-          <p class="form-hint">内容只保存在你的浏览器本地；清理浏览器数据后可能会消失。</p>
-          <button class="solid-button" type="button" id="save-mood">保存情绪日记</button>
-          <div class="mood-chart" id="mood-chart" aria-label="最近情绪曲线"></div>
+
+          <div class="mood-tide-card public-tide">
+            <div class="mood-card-head">
+              <span>匿名岛民树洞</span>
+              <strong id="mood-wall-source">本机预览模式</strong>
+            </div>
+            <textarea id="mood-wall-text" rows="4" maxlength="180" placeholder="写一句可以被其他岛民看见的话。不会显示你的昵称、邮箱或身份。"></textarea>
+            <p class="form-hint">匿名树洞会被其他岛民看见；如果只是想记录给自己，请写在上面的私人日记。</p>
+            <div class="mood-wall-actions">
+              <button class="solid-button" type="button" id="publish-mood-wall">匿名放到树洞海岸</button>
+              <span id="mood-wall-status" aria-live="polite">登录并配置后端后，岛民们会在这里看见彼此的留言。</span>
+            </div>
+          </div>
+
+          <div class="mood-chart" id="mood-chart" aria-label="最近情绪潮汐线"></div>
           <p class="ai-insight" id="ai-insight">保存后，这里会出现你的情绪趋势分析。</p>
           <div class="mood-history" id="mood-history" aria-live="polite"></div>
+          <div class="mood-wall" id="mood-wall" aria-live="polite"></div>
         </div>
       </section>
 

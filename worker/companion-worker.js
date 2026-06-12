@@ -254,6 +254,55 @@ async function handleRandomBottle(env) {
   return json({ bottle });
 }
 
+async function handleMoodWall(request, env, user) {
+  if (request.method === "GET") {
+    const result = await supabaseFetch(
+      env,
+      "/rest/v1/mood_wall_posts?select=islander_no,mood,content,created_at&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&order=created_at.desc&limit=24"
+    );
+    if (result.error) return json({ error: result.error }, result.status);
+    return json({ posts: result.data || [] });
+  }
+
+  const authError = requireUser(user);
+  if (authError) return authError;
+  const payload = await request.json().catch(() => ({}));
+  const content = normalizeBottleContent(payload.content);
+  if (!content) return json({ error: "请先写下一句话。" }, 400);
+  if (CRISIS_PATTERN.test(content)) {
+    return json({
+      post: null,
+      safety: "crisis",
+      reply: crisisReply()
+    });
+  }
+  const row = {
+    user_id: user.id,
+    mood: String(payload.mood || "未命名").slice(0, 20),
+    content,
+    visibility: "public",
+    moderation_status: "approved",
+    risk_flag: false
+  };
+  const result = await supabaseFetch(env, "/rest/v1/mood_wall_posts", {
+    method: "POST",
+    body: JSON.stringify([row])
+  });
+  if (result.error) return json({ error: result.error }, result.status);
+  const post = result.data?.[0];
+  return json({
+    post: post
+      ? {
+          islander_no: post.islander_no,
+          mood: post.mood,
+          content: post.content,
+          created_at: post.created_at
+        }
+      : null,
+    safety: "normal"
+  });
+}
+
 async function handleIslandLogs(env) {
   const result = await supabaseFetch(
     env,
@@ -272,15 +321,17 @@ async function countRows(env, path) {
 async function handleStats(env) {
   const today = new Date().toISOString().slice(0, 10);
   const todayStart = `${today}T00:00:00.000Z`;
-  const [profiles, bottles, moods, requests, moodRows] = await Promise.all([
+  const [profiles, bottles, moods, wallMoods, requests, moodRows, wallMoodRows] = await Promise.all([
     countRows(env, "/rest/v1/profiles?select=id&limit=1000"),
     countRows(env, "/rest/v1/drift_bottles?select=id&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&limit=1000"),
     countRows(env, `/rest/v1/mood_entries?select=id&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`),
+    countRows(env, `/rest/v1/mood_wall_posts?select=id&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`),
     countRows(env, "/rest/v1/consult_requests?select=id&limit=1000"),
-    supabaseFetch(env, `/rest/v1/mood_entries?select=mood&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`)
+    supabaseFetch(env, `/rest/v1/mood_entries?select=mood&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`),
+    supabaseFetch(env, `/rest/v1/mood_wall_posts?select=mood&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`)
   ]);
   const moodCounts = {};
-  (moodRows.data || []).forEach((entry) => {
+  [...(moodRows.data || []), ...(wallMoodRows.data || [])].forEach((entry) => {
     const mood = entry.mood || "未命名";
     moodCounts[mood] = (moodCounts[mood] || 0) + 1;
   });
@@ -294,7 +345,7 @@ async function handleStats(env) {
     stats: {
       islanders: profiles,
       bottles,
-      todayMoods: moods,
+      todayMoods: moods + wallMoods,
       consultRequests: requests
     },
     moodStats
@@ -374,6 +425,7 @@ export default {
       if (pathname === "/api/sprite-chats" && request.method === "POST") return handleSpriteChatSave(request, env, user);
       if (pathname === "/api/bottles" && request.method === "POST") return handleBottleCreate(request, env, user);
       if (pathname === "/api/bottles/random" && request.method === "GET") return handleRandomBottle(env);
+      if (pathname === "/api/mood-wall") return handleMoodWall(request, env, user);
       if (pathname === "/api/island-logs" && request.method === "GET") return handleIslandLogs(env);
       if (pathname === "/api/stats" && request.method === "GET") return handleStats(env);
       if (pathname === "/api/admin/requests" || pathname.startsWith("/api/admin/requests/")) return handleAdminRequests(request, env, user, pathname);

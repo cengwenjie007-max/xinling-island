@@ -72,6 +72,18 @@ create table public.drift_bottles (
   created_at timestamptz not null default now()
 );
 
+create table public.mood_wall_posts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  islander_no bigint generated always as identity,
+  mood text not null,
+  content text not null,
+  visibility text not null default 'public' check (visibility in ('public', 'private')),
+  moderation_status text not null default 'approved' check (moderation_status in ('pending', 'approved', 'hidden')),
+  risk_flag boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
 create table public.island_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references public.profiles(id) on delete set null,
@@ -122,6 +134,8 @@ create index mood_entries_user_created_idx on public.mood_entries(user_id, creat
 create index test_sessions_user_created_idx on public.test_sessions(user_id, created_at desc);
 create index sprite_chats_user_created_idx on public.sprite_chats(user_id, created_at desc);
 create index drift_bottles_public_created_idx on public.drift_bottles(visibility, moderation_status, created_at desc);
+create index mood_wall_posts_public_created_idx on public.mood_wall_posts(visibility, moderation_status, risk_flag, created_at desc);
+create index mood_wall_posts_user_created_idx on public.mood_wall_posts(user_id, created_at desc);
 create index island_logs_public_created_idx on public.island_logs(visibility, moderation_status, created_at desc);
 create index consult_requests_status_created_idx on public.consult_requests(status, created_at desc);
 create index assignments_provider_status_idx on public.assignments(provider_id, status);
@@ -218,6 +232,7 @@ alter table public.mood_entries enable row level security;
 alter table public.test_sessions enable row level security;
 alter table public.sprite_chats enable row level security;
 alter table public.drift_bottles enable row level security;
+alter table public.mood_wall_posts enable row level security;
 alter table public.island_logs enable row level security;
 alter table public.consult_requests enable row level security;
 alter table public.assignments enable row level security;
@@ -259,6 +274,15 @@ for insert with check (user_id = auth.uid() or user_id is null);
 create policy "bottles owner read" on public.drift_bottles
 for select using (user_id = auth.uid());
 create policy "bottles admin all" on public.drift_bottles
+for all using (public.is_admin()) with check (public.is_admin());
+
+create policy "mood wall public approved read" on public.mood_wall_posts
+for select using (visibility = 'public' and moderation_status = 'approved' and risk_flag = false);
+create policy "mood wall owner insert" on public.mood_wall_posts
+for insert with check (user_id = auth.uid());
+create policy "mood wall owner read" on public.mood_wall_posts
+for select using (user_id = auth.uid());
+create policy "mood wall admin all" on public.mood_wall_posts
 for all using (public.is_admin()) with check (public.is_admin());
 
 create policy "logs public approved read" on public.island_logs

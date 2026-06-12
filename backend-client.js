@@ -86,6 +86,14 @@
     return apiFetch("/api/island-logs");
   }
 
+  async function publishMoodWallPost(post) {
+    return apiFetch("/api/mood-wall", { method: "POST", body: JSON.stringify(post) });
+  }
+
+  async function listMoodWallPosts() {
+    return apiFetch("/api/mood-wall");
+  }
+
   async function getStats() {
     return apiFetch("/api/stats");
   }
@@ -130,6 +138,8 @@
     sendBottle,
     getRandomBottle,
     listIslandLogs,
+    publishMoodWallPost,
+    listMoodWallPosts,
     getStats,
     adminListRequests,
     adminAssignRequest,
