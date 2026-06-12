@@ -44,6 +44,7 @@ let selectedService = state.consultIntent?.service || "倾听员陪伴";
 let spriteMood = "idle";
 let oceanAudio = null;
 let oceanSoundOn = false;
+let oceanUnlockBound = false;
 
 const seedBottles = [
   { islanderNo: 27, content: "今天很难，但我愿意再给自己一点时间。" },
@@ -506,69 +507,118 @@ function createOceanAudio() {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext) return null;
   const context = new AudioContext();
-  const bufferSize = context.sampleRate * 2;
-  const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let index = 0; index < bufferSize; index += 1) {
-    data[index] = (Math.random() * 2 - 1) * 0.45;
-  }
-  const noise = context.createBufferSource();
-  noise.buffer = buffer;
-  noise.loop = true;
-  const filter = context.createBiquadFilter();
-  filter.type = "lowpass";
-  filter.frequency.value = 520;
-  const swell = context.createOscillator();
-  swell.type = "sine";
-  swell.frequency.value = 0.09;
+  const bufferSize = context.sampleRate * 4;
+  const makeNoise = (strength = 1) => {
+    const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+    const data = buffer.getChannelData(0);
+    let last = 0;
+    for (let index = 0; index < bufferSize; index += 1) {
+      last = last * 0.72 + (Math.random() * 2 - 1) * 0.28;
+      data[index] = last * strength;
+    }
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    return source;
+  };
+  const deepWave = makeNoise(0.95);
+  const deepFilter = context.createBiquadFilter();
+  deepFilter.type = "lowpass";
+  deepFilter.frequency.value = 360;
+  const foamWave = makeNoise(0.52);
+  const foamFilter = context.createBiquadFilter();
+  foamFilter.type = "bandpass";
+  foamFilter.frequency.value = 1200;
+  foamFilter.Q.value = 0.7;
+  const waveSwell = context.createOscillator();
+  waveSwell.type = "sine";
+  waveSwell.frequency.value = 0.075;
   const swellGain = context.createGain();
-  swellGain.gain.value = 0.018;
+  swellGain.gain.value = 0.055;
   const mainGain = context.createGain();
   mainGain.gain.value = 0.0001;
-  swell.connect(swellGain);
+  const deepGain = context.createGain();
+  deepGain.gain.value = 0.78;
+  const foamGain = context.createGain();
+  foamGain.gain.value = 0.34;
+  waveSwell.connect(swellGain);
   swellGain.connect(mainGain.gain);
-  noise.connect(filter);
-  filter.connect(mainGain);
+  deepWave.connect(deepFilter);
+  deepFilter.connect(deepGain);
+  deepGain.connect(mainGain);
+  foamWave.connect(foamFilter);
+  foamFilter.connect(foamGain);
+  foamGain.connect(mainGain);
   mainGain.connect(context.destination);
-  noise.start();
-  swell.start();
+  deepWave.start();
+  foamWave.start();
+  waveSwell.start();
   return { context, mainGain };
 }
 
-async function setOceanSound(enabled) {
-  const button = document.querySelector("#sound-toggle");
+function setOceanStatus(message, active = false) {
   const status = document.querySelector("#sound-status");
-  if (enabled && !oceanAudio) oceanAudio = createOceanAudio();
-  if (enabled && !oceanAudio) {
-    if (status) status.textContent = "当前浏览器不支持网页音频，海浪先保持安静。";
-    return;
+  const indicator = document.querySelector("#sound-indicator");
+  if (status) status.textContent = message;
+  indicator?.classList.toggle("active", active);
+}
+
+function showSoundUnlockPrompt() {
+  const prompt = document.querySelector("#sound-unlock");
+  if (!prompt || oceanSoundOn) return;
+  prompt.hidden = false;
+}
+
+function hideSoundUnlockPrompt() {
+  const prompt = document.querySelector("#sound-unlock");
+  if (prompt) prompt.hidden = true;
+}
+
+async function startOceanSound({ fromUserGesture = false } = {}) {
+  if (!oceanAudio) oceanAudio = createOceanAudio();
+  if (!oceanAudio) {
+    setOceanStatus("当前浏览器不支持网页音频，海浪先保持安静。", false);
+    return false;
   }
-  if (oceanAudio?.context?.state === "suspended") await oceanAudio.context.resume();
-  oceanSoundOn = Boolean(enabled);
-  state.soundEnabled = oceanSoundOn;
-  if (oceanAudio) {
-    oceanAudio.mainGain.gain.cancelScheduledValues(oceanAudio.context.currentTime);
-    oceanAudio.mainGain.gain.linearRampToValueAtTime(oceanSoundOn ? 0.055 : 0.0001, oceanAudio.context.currentTime + 0.6);
+  try {
+    if (oceanAudio.context.state === "suspended") {
+      await oceanAudio.context.resume();
+    }
+    oceanSoundOn = oceanAudio.context.state === "running";
+    if (!oceanSoundOn) throw new Error("AudioContext was not resumed.");
+    const now = oceanAudio.context.currentTime;
+    oceanAudio.mainGain.gain.cancelScheduledValues(now);
+    oceanAudio.mainGain.gain.setValueAtTime(Math.max(oceanAudio.mainGain.gain.value, 0.0001), now);
+    oceanAudio.mainGain.gain.linearRampToValueAtTime(0.15, now + 1.1);
+    state.soundEnabled = true;
+    saveState();
+    hideSoundUnlockPrompt();
+    setOceanStatus("海浪声已经响起。现在的声音会比之前更明显。", true);
+    return true;
+  } catch (_error) {
+    oceanSoundOn = false;
+    setOceanStatus(fromUserGesture ? "海浪声暂时没有启动，请再点击一次进入按钮。" : "浏览器拦截了自动播放，点击进入后就能听见海浪。", false);
+    showSoundUnlockPrompt();
+    return false;
   }
-  if (button) {
-    button.classList.toggle("active", oceanSoundOn);
-    button.setAttribute("aria-pressed", String(oceanSoundOn));
-    button.lastChild.textContent = oceanSoundOn ? " 关闭海浪声" : " 开启海浪声";
+}
+
+function initOceanSoundAutoplay() {
+  setOceanStatus("正在尝试让海浪自动响起。", false);
+  startOceanSound();
+  const unlock = () => {
+    if (!oceanSoundOn) startOceanSound({ fromUserGesture: true });
+  };
+  document.querySelector("#sound-unlock-button")?.addEventListener("click", unlock);
+  if (!oceanUnlockBound) {
+    oceanUnlockBound = true;
+    document.addEventListener("pointerdown", unlock, { once: true, passive: true });
+    document.addEventListener("keydown", unlock, { once: true });
   }
-  if (status) status.textContent = oceanSoundOn ? "海浪声已开启。可以把它当作一分钟靠岸练习。" : "海浪声已关闭。这里仍然安静等你。";
-  saveState();
 }
 
 function renderSoundControl() {
-  const button = document.querySelector("#sound-toggle");
-  const status = document.querySelector("#sound-status");
-  if (!button) return;
-  button.classList.remove("active");
-  button.setAttribute("aria-pressed", "false");
-  button.lastChild.textContent = state.soundEnabled ? " 恢复海浪声" : " 开启海浪声";
-  if (status) {
-    status.textContent = state.soundEnabled ? "为了不打扰你，刷新后需要再次点击才会响起。" : "轻一点的海浪，只在你点击后响起。";
-  }
+  setOceanStatus(state.soundEnabled ? "正在恢复海浪环境音。" : "正在尝试让海浪自动响起。", false);
 }
 
 function fallbackSpriteReply(text) {
@@ -964,7 +1014,6 @@ document.querySelector("#send-bottle").addEventListener("click", async () => {
 document.querySelector("#receive-bottle")?.addEventListener("click", receiveBottle);
 document.querySelector("#save-treehole")?.addEventListener("click", saveTreeholeNote);
 document.querySelector("#new-goodnight")?.addEventListener("click", rotateGoodnightMessage);
-document.querySelector("#sound-toggle")?.addEventListener("click", () => setOceanSound(!oceanSoundOn));
 
 document.querySelectorAll(".booking-option").forEach((button) => {
   button.addEventListener("click", () => {
@@ -1024,6 +1073,7 @@ renderBottles();
 renderGoodnightMessage();
 renderTreeholeNotes();
 renderSoundControl();
+initOceanSoundAutoplay();
 renderBookingState();
 renderSpriteChats();
 document.querySelector("#ai-insight").textContent = insightForMoods();

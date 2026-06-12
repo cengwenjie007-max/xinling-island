@@ -50,16 +50,24 @@
             <a class="hero-cta secondary" href="#mood">记录今日心情</a>
             <a class="hero-cta secondary" href="#help">查看求助灯塔</a>
           </div>
-          <div class="ambient-dock" aria-label="海浪声音控制">
-            <button class="sound-toggle" type="button" id="sound-toggle" aria-pressed="false">
-              <span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i></span>
-              开启海浪声
-            </button>
-            <p id="sound-status">轻一点的海浪，只在你点击后响起。</p>
+          <div class="ambient-dock" aria-label="海浪环境状态">
+            <span class="sound-indicator" id="sound-indicator" aria-hidden="true">
+              <span class="sound-bars"><i></i><i></i><i></i></span>
+              海浪环境音
+            </span>
+            <p id="sound-status">正在尝试让海浪自动响起。</p>
           </div>
         </div>
         <div class="scroll-note">向下探索</div>
       </section>
+      <div class="sound-unlock" id="sound-unlock" hidden>
+        <div class="sound-unlock-card">
+          <span>海浪被浏览器拦住了</span>
+          <h2>进入心灵岛，听见海浪。</h2>
+          <p>点击一次后，海浪声会明显响起，陪你慢慢靠岸。</p>
+          <button class="hero-cta" type="button" id="sound-unlock-button">进入心灵岛</button>
+        </div>
+      </div>
 
       <section class="intro" id="about" aria-labelledby="about-title">
         <p class="section-label">01 / ABOUT</p>
