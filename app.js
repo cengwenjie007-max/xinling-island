@@ -28,6 +28,10 @@ const defaultState = {
   visitStreak: 0,
   testsCompleted: 0,
   receivedBottles: [],
+  islanderRole: "",
+  ritualMood: null,
+  firstCabinLit: false,
+  lastRitualMoodDate: "",
   treeholeNotes: [],
   lastTreeholeRewardDate: "",
   soundEnabled: false,
@@ -125,10 +129,10 @@ const mapPlaces = {
     status: "待点亮",
     fit: "适合：心理测试、咨询准备、深度探索。",
     action: "我能做什么：心理测试、咨询预约准备、与岛上精灵对话。",
-    unlock: "心灵值达到 80、完成新手任务，或完成 3 次标准量表后点亮神殿。",
+    unlock: "心灵值达到 80、完成靠岸仪式，或完成 3 次标准量表后点亮神殿。",
     href: "tests.html",
     cta: "进入深度探索",
-    isUnlocked: () => state.soul >= 80 || Object.values(state.quests).filter(Boolean).length >= 3 || state.testsCompleted >= 3
+    isUnlocked: () => state.soul >= 80 || state.firstCabinLit || Object.values(state.quests).filter(Boolean).length >= 3 || state.testsCompleted >= 3
   }
 };
 
@@ -155,6 +159,15 @@ function normalizeState(nextState) {
     visitStreak: Math.max(0, Number(nextState.visitStreak || 0)),
     testsCompleted: Math.max(0, Number(nextState.testsCompleted || 0)),
     receivedBottles: Array.isArray(nextState.receivedBottles) ? nextState.receivedBottles : [],
+    islanderRole: typeof nextState.islanderRole === "string" ? nextState.islanderRole : (nextState.quests?.avatar ? "海风旅人" : ""),
+    ritualMood:
+      nextState.ritualMood && typeof nextState.ritualMood === "object"
+        ? nextState.ritualMood
+        : nextState.quests?.mood
+          ? { mood: "平静", energy: 6, date: "" }
+          : null,
+    firstCabinLit: Boolean(nextState.firstCabinLit || nextState.quests?.cabin),
+    lastRitualMoodDate: typeof nextState.lastRitualMoodDate === "string" ? nextState.lastRitualMoodDate : "",
     treeholeNotes: Array.isArray(nextState.treeholeNotes) ? nextState.treeholeNotes : [],
     lastTreeholeRewardDate: typeof nextState.lastTreeholeRewardDate === "string" ? nextState.lastTreeholeRewardDate : "",
     soundEnabled: Boolean(nextState.soundEnabled),
@@ -227,6 +240,108 @@ function renderQuests() {
   document.querySelectorAll("[data-quest]").forEach((input) => {
     input.checked = Boolean(state.quests[input.dataset.quest]);
   });
+}
+
+function canLightCabin() {
+  return Boolean(state.islanderRole && state.ritualMood);
+}
+
+function renderRitual() {
+  const roleDone = Boolean(state.islanderRole);
+  const moodDone = Boolean(state.ritualMood);
+  const cabinReady = canLightCabin();
+  const cabinDone = Boolean(state.firstCabinLit);
+  document.querySelectorAll("[data-role-choice]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.roleChoice === state.islanderRole);
+  });
+  document.querySelectorAll("[data-ritual-mood]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.ritualMood === state.ritualMood?.mood);
+  });
+  document.querySelector("[data-ritual-card='role']")?.classList.toggle("completed", roleDone);
+  document.querySelector("[data-ritual-card='mood']")?.classList.toggle("completed", moodDone);
+  const cabinCard = document.querySelector("[data-ritual-card='cabin']");
+  cabinCard?.classList.toggle("locked", !cabinReady && !cabinDone);
+  cabinCard?.classList.toggle("ready", cabinReady && !cabinDone);
+  cabinCard?.classList.toggle("completed", cabinDone);
+  document.querySelectorAll("[data-ritual-dot]").forEach((dot) => {
+    const step = dot.dataset.ritualDot;
+    dot.classList.toggle("completed", step === "role" ? roleDone : step === "mood" ? moodDone : cabinDone);
+  });
+  const roleSummary = document.querySelector("#ritual-role-summary");
+  if (roleSummary) {
+    roleSummary.textContent = roleDone ? `你今天以“${state.islanderRole}”的身份登岛。` : "给今天的自己一个角色，再开始登岛。";
+  }
+  const moodSummary = document.querySelector("#ritual-mood-summary");
+  if (moodSummary) {
+    moodSummary.textContent = moodDone ? `你留下了一枚“${state.ritualMood.mood}”贝壳，岛屿已经听见。` : "不用解释，也不用立刻变好，只给此刻一个名字。";
+  }
+  const cabinSummary = document.querySelector("#ritual-cabin-summary");
+  if (cabinSummary) {
+    cabinSummary.textContent = cabinDone
+      ? "你的第一座心灵小屋已点亮，今晚可以在这里休息。"
+      : cabinReady
+        ? "海雾已经散开，可以点亮你的第一座心灵小屋。"
+        : "完成前两步后，小屋会从海雾里亮起来。";
+  }
+  const cabinButton = document.querySelector("#light-cabin");
+  if (cabinButton) {
+    cabinButton.disabled = !cabinReady || cabinDone;
+    cabinButton.textContent = cabinDone ? "小屋已点亮" : cabinReady ? "点亮小屋" : "等待前两步";
+  }
+  const stamps = {
+    role: roleDone ? "已登岛" : "待选择",
+    mood: moodDone ? "已留下" : "待留下",
+    cabin: cabinDone ? "已点亮" : cabinReady ? "可点亮" : "海雾未散"
+  };
+  Object.entries(stamps).forEach(([step, text]) => {
+    const stamp = document.querySelector(`[data-ritual-stamp="${step}"]`);
+    if (stamp) stamp.textContent = text;
+  });
+}
+
+function completeRitualStep(step, payload = {}) {
+  if (step === "role") {
+    state.islanderRole = payload.role || "海风旅人";
+    state.quests.avatar = true;
+    awardBadge("获得码头通行证");
+  }
+  if (step === "mood") {
+    const today = todayKey();
+    const mood = payload.mood || "平静";
+    const energy = clamp(Number(payload.energy || 6), 1, 10);
+    state.ritualMood = { mood, energy, date: new Date().toISOString() };
+    state.quests.mood = true;
+    state.energy = energy;
+    selectedMood = { mood, energy };
+    if (state.lastRitualMoodDate !== today) {
+      state.moods.push({
+        mood,
+        energy,
+        note: `靠岸仪式：留下了一枚“${mood}”心情贝壳。`,
+        date: new Date().toISOString(),
+        source: "ritual"
+      });
+      addSoul(10);
+      state.lastRitualMoodDate = today;
+    }
+    awardBadge("心情贝壳");
+  }
+  if (step === "cabin") {
+    if (!canLightCabin() || state.firstCabinLit) return;
+    state.firstCabinLit = true;
+    state.quests.cabin = true;
+    addSoul(20);
+    awardBadge("初次靠岸");
+  }
+  if (state.firstCabinLit || Object.values(state.quests).filter(Boolean).length >= 3) awardBadge("完成靠岸仪式");
+  saveState();
+  renderRitual();
+  updateGrowth();
+  renderMoodChart();
+  renderMoodHistory();
+  renderMoodPulse();
+  renderIslandStats();
+  updateMapLocks();
 }
 
 function renderMoodChart() {
@@ -965,6 +1080,25 @@ document.querySelectorAll("[data-quest]").forEach((input) => {
   });
 });
 
+document.querySelectorAll("[data-role-choice]").forEach((button) => {
+  button.addEventListener("click", () => {
+    completeRitualStep("role", { role: button.dataset.roleChoice });
+  });
+});
+
+document.querySelectorAll("[data-ritual-mood]").forEach((button) => {
+  button.addEventListener("click", () => {
+    completeRitualStep("mood", {
+      mood: button.dataset.ritualMood,
+      energy: Number(button.dataset.energy)
+    });
+  });
+});
+
+document.querySelector("#light-cabin")?.addEventListener("click", () => {
+  completeRitualStep("cabin");
+});
+
 document.querySelectorAll(".mood-button").forEach((button) => {
   button.addEventListener("click", () => {
     document.querySelectorAll(".mood-button").forEach((item) => item.classList.remove("active"));
@@ -1114,6 +1248,7 @@ document.querySelectorAll("[data-place]").forEach((button) => {
 
 trackVisit();
 renderQuests();
+renderRitual();
 updateGrowth();
 renderMoodChart();
 renderMoodHistory();

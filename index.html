@@ -86,27 +86,46 @@
       <section class="guide" id="guide" aria-labelledby="guide-title">
         <div class="section-intro">
           <p class="section-label">02 / NEW ISLANDER</p>
-          <h2 id="guide-title">第一次登岛，从三个小任务开始。</h2>
+          <h2 id="guide-title">第一次登岛，请先完成你的靠岸仪式。</h2>
         </div>
-        <div class="guide-grid">
-          <label class="quest-card">
-            <input type="checkbox" data-quest="avatar" />
-            <span>第一步</span>
-            <strong>选择你的岛民形象</strong>
-            <p>给今天的自己一个角色：海风旅人、夜航诗人或安静守林人。</p>
-          </label>
-          <label class="quest-card">
-            <input type="checkbox" data-quest="mood" />
-            <span>第二步</span>
-            <strong>记录今天的心情</strong>
-            <p>把情绪放进潮汐瓶，不用解释，也不用立刻变好。</p>
-          </label>
-          <label class="quest-card">
-            <input type="checkbox" data-quest="cabin" />
-            <span>第三步</span>
-            <strong>领取你的第一座小屋</strong>
-            <p>完成首日登岛后，点亮属于你的精神栖息地。</p>
-          </label>
+        <div class="ritual-progress" aria-label="靠岸仪式进度">
+          <span data-ritual-dot="role"></span>
+          <i></i>
+          <span data-ritual-dot="mood"></span>
+          <i></i>
+          <span data-ritual-dot="cabin"></span>
+        </div>
+        <div class="guide-grid ritual-grid">
+          <article class="quest-card ritual-card passport-card" data-ritual-card="role">
+            <span class="ritual-step">第一步 / 码头通行证</span>
+            <strong>选择今天的岛民身份</strong>
+            <p id="ritual-role-summary">给今天的自己一个角色，再开始登岛。</p>
+            <div class="ritual-options" aria-label="选择岛民身份">
+              <button type="button" data-role-choice="海风旅人">海风旅人</button>
+              <button type="button" data-role-choice="夜航诗人">夜航诗人</button>
+              <button type="button" data-role-choice="安静守林人">安静守林人</button>
+            </div>
+            <em class="ritual-stamp" data-ritual-stamp="role">待选择</em>
+          </article>
+          <article class="quest-card ritual-card shell-card" data-ritual-card="mood">
+            <span class="ritual-step">第二步 / 心情贝壳</span>
+            <strong>留下一枚心情贝壳</strong>
+            <p id="ritual-mood-summary">不用解释，也不用立刻变好，只给此刻一个名字。</p>
+            <div class="ritual-options mood-shells" aria-label="选择心情贝壳">
+              <button type="button" data-ritual-mood="开心" data-energy="8">开心</button>
+              <button type="button" data-ritual-mood="平静" data-energy="6">平静</button>
+              <button type="button" data-ritual-mood="难过" data-energy="3">难过</button>
+              <button type="button" data-ritual-mood="焦虑" data-energy="4">焦虑</button>
+            </div>
+            <em class="ritual-stamp" data-ritual-stamp="mood">待留下</em>
+          </article>
+          <article class="quest-card ritual-card cabin-card locked" data-ritual-card="cabin">
+            <span class="ritual-step">第三步 / 海边小屋</span>
+            <strong>点亮你的第一座小屋</strong>
+            <p id="ritual-cabin-summary">完成前两步后，小屋会从海雾里亮起来。</p>
+            <button class="ritual-cabin-button" type="button" id="light-cabin">点亮小屋</button>
+            <em class="ritual-stamp" data-ritual-stamp="cabin">海雾未散</em>
+          </article>
         </div>
       </section>
 
