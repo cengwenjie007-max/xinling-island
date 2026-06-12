@@ -135,26 +135,43 @@
           <h2 id="growth-title">每天都有一个回来岛上的理由。</h2>
         </div>
         <div class="growth-panel">
+          <div class="growth-stars" aria-hidden="true"></div>
+          <div class="growth-beam" aria-hidden="true"></div>
           <div class="level-ring">
             <span id="level-number">Lv.1</span>
             <small>岛屿等级</small>
           </div>
-          <div class="growth-stats">
-            <article>
-              <span id="soul-value">20</span>
-              <p>心灵值</p>
-            </article>
-            <article>
-              <span id="emotion-energy">6</span>
-              <p>情绪能量</p>
-            </article>
-            <article>
-              <span id="badge-count">1</span>
-              <p>勋章</p>
-            </article>
+          <div class="growth-dashboard">
+            <div class="growth-stats">
+              <article>
+                <span id="soul-value">20</span>
+                <p>心灵值</p>
+              </article>
+              <article>
+                <span id="emotion-energy">6</span>
+                <p>情绪能量</p>
+              </article>
+              <article>
+                <span id="badge-count">1</span>
+                <p>勋章</p>
+              </article>
+            </div>
+            <div class="growth-progress" aria-label="今日回岛进度">
+              <div>
+                <span>今日回岛进度</span>
+                <strong id="growth-progress-label">等待靠岸</strong>
+              </div>
+              <div class="growth-progress-track">
+                <i id="growth-progress-fill"></i>
+              </div>
+            </div>
+            <p class="growth-next" id="growth-next-action">下一座可点亮区域：森林疗愈区</p>
           </div>
-          <div class="badge-row" id="badge-row">
-            <span>初次登岛</span>
+          <div class="badge-shelf">
+            <p>贝壳徽章收集带</p>
+            <div class="badge-row" id="badge-row">
+              <span>初次登岛</span>
+            </div>
           </div>
         </div>
       </section>

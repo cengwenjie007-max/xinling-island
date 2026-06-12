@@ -219,6 +219,42 @@ function addSoul(amount) {
   state.soul = clamp(Number(state.soul || 0) + amount, 0, 999);
 }
 
+function getGrowthVoyage() {
+  const today = todayKey();
+  const hasMoodToday = state.moods.some((entry) => String(entry.date || "").startsWith(today));
+  const hasBottleAction = state.bottles.length > 1 || state.receivedBottles.length > 0;
+  const hasStandardTest = Number(state.testsCompleted || 0) > 0;
+  const steps = [
+    Boolean(state.islanderRole),
+    Boolean(state.ritualMood),
+    Boolean(state.firstCabinLit),
+    hasMoodToday,
+    hasBottleAction || hasStandardTest
+  ];
+  const completed = steps.filter(Boolean).length;
+  const percent = Math.round((completed / steps.length) * 100);
+  let label = "等待靠岸";
+  if (completed > 0 && completed < steps.length) label = `${completed}/${steps.length} 段航线已点亮`;
+  if (completed === steps.length) label = "今日航线完成";
+
+  let next = "下一座可点亮区域：海边码头";
+  if (!state.islanderRole) {
+    next = "下一座可点亮区域：海边码头，先选择今天的岛民身份。";
+  } else if (!state.ritualMood) {
+    next = "下一座可点亮区域：森林疗愈区，留下一枚心情贝壳。";
+  } else if (!state.firstCabinLit) {
+    next = "下一座可点亮区域：第一座小屋，完成靠岸仪式。";
+  } else if (!hasMoodToday) {
+    next = "下一座可点亮区域：回忆灯塔，记录一次今天的情绪潮汐。";
+  } else if (!hasBottleAction && !hasStandardTest) {
+    next = "下一座可点亮区域：星光广场，投递漂流瓶或完成一次标准量表。";
+  } else {
+    next = "下一座可点亮区域：心灵神殿，继续深度探索自己的状态。";
+  }
+
+  return { percent, label, next };
+}
+
 function updateGrowth() {
   const level = Math.max(1, Math.floor(state.soul / 60) + 1);
   document.querySelector("#level-number").textContent = `Lv.${level}`;
@@ -227,6 +263,13 @@ function updateGrowth() {
   document.querySelector("#badge-count").textContent = state.badges.length;
   const badgeRow = document.querySelector("#badge-row");
   badgeRow.replaceChildren(...state.badges.map((badge) => createElement("span", "", badge)));
+  const voyage = getGrowthVoyage();
+  const progressLabel = document.querySelector("#growth-progress-label");
+  const progressFill = document.querySelector("#growth-progress-fill");
+  const nextAction = document.querySelector("#growth-next-action");
+  if (progressLabel) progressLabel.textContent = voyage.label;
+  if (progressFill) progressFill.style.width = `${voyage.percent}%`;
+  if (nextAction) nextAction.textContent = voyage.next;
   updateMapLocks();
 }
 
