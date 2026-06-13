@@ -324,25 +324,30 @@
         <div class="companion-copy">
           <p class="section-label">07 / AI COMPANION</p>
           <h2 id="companion-title">岛上精灵，会先接住你的疲惫。</h2>
-          <p>萤火精灵可以接入 AI 陪你整理当下感受。它不能替代心理咨询、医学诊断或紧急帮助。</p>
+          <p>星潮守护灵可以接入 AI 陪你整理当下感受。它不能替代心理咨询、医学诊断或紧急帮助。</p>
         </div>
         <div class="chat-box">
           <p class="safety-note">如果你正在经历强烈危险感、伤害自己的想法，或担心自己无法保持安全，请立刻联系当地紧急电话、医院急诊，或身边可信任的人。</p>
-          <div class="sprite-stage" id="sprite-stage" aria-label="会动的萤火精灵">
+          <div class="sprite-stage" id="sprite-stage" aria-label="会动的星潮守护灵">
             <canvas id="sprite-canvas"></canvas>
             <div class="sprite-fallback" aria-hidden="true">
-              <span>萤</span>
+              <span class="sprite-css-core"></span>
+              <span class="sprite-css-wing left"></span>
+              <span class="sprite-css-wing right"></span>
+              <span class="sprite-css-ring"></span>
             </div>
           </div>
           <div class="sprite-card">
-            <span class="sprite-orb">萤</span>
+            <span class="sprite-orb" aria-hidden="true">
+              <i></i>
+            </span>
             <div>
-              <strong>萤火精灵</strong>
+              <strong>星潮守护灵</strong>
               <p id="sprite-reply">欢迎来到心灵岛，先坐下来休息一下吧。</p>
             </div>
           </div>
           <div class="sprite-log" id="sprite-log" aria-live="polite"></div>
-          <p class="sprite-status" id="sprite-status" aria-live="polite">本地安全守护已开启。AI Worker 未配置时会自动使用温柔 fallback。</p>
+          <p class="sprite-status" id="sprite-status" aria-live="polite">本地陪伴模式已开启。配置云端后，守护灵会连接 AI 回应。</p>
           <div class="chat-input-row">
             <input id="sprite-input" type="text" maxlength="500" placeholder="例如：今天工作好累" />
             <button class="solid-button" type="button" id="send-sprite">倾诉</button>

@@ -927,7 +927,7 @@ function renderSpriteChats() {
   log.replaceChildren(
     ...chats.slice(-MAX_SPRITE_CHATS).map((item) => {
       const bubble = createElement("article", `sprite-message ${item.role === "user" ? "user" : "assistant"}`);
-      bubble.append(createElement("span", "", item.role === "user" ? "你" : "萤火精灵"));
+      bubble.append(createElement("span", "", item.role === "user" ? "你" : "星潮守护灵"));
       bubble.append(createElement("p", "", item.content));
       return bubble;
     })
@@ -935,9 +935,29 @@ function renderSpriteChats() {
   log.scrollTop = log.scrollHeight;
 }
 
+function getCompanionMode() {
+  const apiBaseUrl = String(window.XINLING_BACKEND_CONFIG?.apiBaseUrl || "").trim();
+  return {
+    apiBaseUrl,
+    configured: Boolean(apiBaseUrl)
+  };
+}
+
+function renderCompanionConnection() {
+  const mode = getCompanionMode();
+  if (mode.configured) {
+    setSpriteStatus("云端通道已配置。守护灵会先尝试连接 AI，再保留本地陪伴作为备用。", "glow");
+  } else {
+    setSpriteStatus("本地陪伴模式已开启。配置云端后，守护灵会连接 AI 回应。", "idle");
+  }
+}
+
 function setSpriteStatus(message, mood = "idle") {
   const status = document.querySelector("#sprite-status");
-  if (status) status.textContent = message;
+  if (status) {
+    status.textContent = message;
+    status.dataset.tone = mood;
+  }
   spriteMood = mood;
 }
 
@@ -951,9 +971,8 @@ async function syncSpriteChat(role, content) {
 }
 
 async function askCompanionAI(message) {
-  const apiUrl = window.XINLING_BACKEND_CONFIG?.apiBaseUrl
-    ? `${window.XINLING_BACKEND_CONFIG.apiBaseUrl}/api/companion`
-    : COMPANION_API_URL;
+  const mode = getCompanionMode();
+  const apiUrl = mode.apiBaseUrl ? `${mode.apiBaseUrl}/api/companion` : COMPANION_API_URL;
   if (!apiUrl) {
     throw new Error("Companion API URL is not configured.");
   }
@@ -986,20 +1005,28 @@ async function sendSpriteMessage() {
     const reply = fallbackSpriteReply(text);
     appendSpriteChat("assistant", reply);
     syncSpriteChat("assistant", reply);
-    setSpriteStatus("检测到安全风险：已优先显示现实求助提示，未调用 AI。", "alert");
+    setSpriteStatus("灯塔提示已点亮：请优先联系现实中的紧急支持，守护灵不会调用云端 AI。", "alert");
+    return;
+  }
+  const mode = getCompanionMode();
+  if (!mode.configured && !COMPANION_API_URL) {
+    const reply = fallbackSpriteReply(text);
+    appendSpriteChat("assistant", reply);
+    syncSpriteChat("assistant", reply);
+    setSpriteStatus("本地陪伴已回应。配置云端后，守护灵会尝试连接 AI。", "fallback");
     return;
   }
   button.disabled = true;
-  setSpriteStatus("萤火精灵正在倾听...", "thinking");
+  setSpriteStatus("守护灵正在靠近...", "thinking");
   try {
     const data = await askCompanionAI(text);
     appendSpriteChat("assistant", data.reply);
-    setSpriteStatus(data.safety === "crisis" ? "AI 返回了安全提示，请优先联系现实支持。" : "AI 陪伴已回应。", data.safety === "crisis" ? "alert" : "glow");
+    setSpriteStatus(data.safety === "crisis" ? "灯塔提示已点亮，请优先联系现实支持。" : "云端 AI 陪伴已连接，守护灵回应了你。", data.safety === "crisis" ? "alert" : "glow");
   } catch (_error) {
     const reply = fallbackSpriteReply(text);
     appendSpriteChat("assistant", reply);
     syncSpriteChat("assistant", reply);
-    setSpriteStatus("AI Worker 暂未连接，已使用本地温柔回应。", "fallback");
+    setSpriteStatus("云端暂未连上，已用本地陪伴回应。", "fallback");
   } finally {
     button.disabled = false;
   }
@@ -1040,31 +1067,49 @@ function initSpriteScene() {
     camera.position.set(0, 0.7, 7);
 
     const core = new THREE.Mesh(
-      new THREE.SphereGeometry(0.72, 40, 40),
+      new THREE.SphereGeometry(0.68, 48, 48),
       new THREE.MeshStandardMaterial({
-        color: 0xbfffe5,
-        emissive: 0x5cffcf,
-        emissiveIntensity: 1.25,
-        roughness: 0.34,
+        color: 0xb9fff6,
+        emissive: 0x49dce7,
+        emissiveIntensity: 1.35,
+        roughness: 0.26,
         metalness: 0.02
       })
     );
     scene.add(core);
 
     const halo = new THREE.Mesh(
-      new THREE.SphereGeometry(1.03, 40, 40),
-      new THREE.MeshBasicMaterial({ color: 0xd9fff2, transparent: true, opacity: 0.18 })
+      new THREE.TorusGeometry(1.06, 0.025, 14, 96),
+      new THREE.MeshBasicMaterial({ color: 0xd9fff2, transparent: true, opacity: 0.34 })
     );
+    halo.rotation.x = Math.PI / 2.15;
     scene.add(halo);
 
-    const wingMaterial = new THREE.MeshBasicMaterial({ color: 0xf9fff8, transparent: true, opacity: 0.44, side: THREE.DoubleSide });
-    const wingGeometry = new THREE.CircleGeometry(0.55, 32);
+    const aura = new THREE.Mesh(
+      new THREE.SphereGeometry(1.18, 48, 48),
+      new THREE.MeshBasicMaterial({ color: 0x86fff0, transparent: true, opacity: 0.12 })
+    );
+    scene.add(aura);
+
+    const tideMirror = new THREE.Mesh(
+      new THREE.TorusGeometry(1.18, 0.018, 12, 96),
+      new THREE.MeshBasicMaterial({ color: 0xffdf8b, transparent: true, opacity: 0.38 })
+    );
+    tideMirror.position.y = -0.78;
+    tideMirror.scale.set(1.26, 0.22, 1);
+    tideMirror.rotation.x = Math.PI / 2;
+    scene.add(tideMirror);
+
+    const wingMaterial = new THREE.MeshBasicMaterial({ color: 0xf2fffb, transparent: true, opacity: 0.42, side: THREE.DoubleSide });
+    const wingGeometry = new THREE.CircleGeometry(0.58, 40);
     const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
     const rightWing = new THREE.Mesh(wingGeometry, wingMaterial.clone());
-    leftWing.position.set(-0.68, 0.12, -0.08);
-    rightWing.position.set(0.68, 0.12, -0.08);
-    leftWing.scale.set(0.8, 1.18, 1);
-    rightWing.scale.set(0.8, 1.18, 1);
+    leftWing.position.set(-0.72, 0.08, -0.12);
+    rightWing.position.set(0.72, 0.08, -0.12);
+    leftWing.scale.set(0.52, 1.32, 1);
+    rightWing.scale.set(0.52, 1.32, 1);
+    leftWing.rotation.z = -0.28;
+    rightWing.rotation.z = 0.28;
     scene.add(leftWing, rightWing);
 
     const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x102d3a });
@@ -1075,18 +1120,18 @@ function initSpriteScene() {
     rightEye.position.set(0.18, 0.18, 0.68);
     scene.add(leftEye, rightEye);
 
-    const particleCount = window.innerWidth < 720 ? 34 : 62;
+    const particleCount = window.innerWidth < 720 ? 42 : 82;
     const particleGeometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     for (let index = 0; index < particleCount; index += 1) {
-      positions[index * 3] = (Math.random() - 0.5) * 5;
-      positions[index * 3 + 1] = (Math.random() - 0.5) * 3.2;
+      positions[index * 3] = (Math.random() - 0.5) * 5.4;
+      positions[index * 3 + 1] = (Math.random() - 0.5) * 3.6;
       positions[index * 3 + 2] = (Math.random() - 0.5) * 3;
     }
     particleGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     const particles = new THREE.Points(
       particleGeometry,
-      new THREE.PointsMaterial({ color: 0xf7ffc2, size: 0.06, transparent: true, opacity: 0.72 })
+      new THREE.PointsMaterial({ color: 0xffe7a2, size: 0.055, transparent: true, opacity: 0.76 })
     );
     scene.add(particles);
 
@@ -1109,10 +1154,16 @@ function initSpriteScene() {
       const pulse = spriteMood === "thinking" ? 1.2 : spriteMood === "alert" ? 0.72 : spriteMood === "glow" ? 1.45 : 1;
       core.position.y = Math.sin(t * 1.7) * 0.12;
       core.scale.setScalar(1 + Math.sin(t * 2.8) * 0.035 * pulse);
-      halo.scale.setScalar(1.04 + Math.sin(t * 2.2) * 0.08 * pulse);
-      halo.material.opacity = spriteMood === "alert" ? 0.26 : 0.16 + Math.sin(t * 3) * 0.035 * pulse;
-      leftWing.rotation.y = -0.85 + Math.sin(t * 8) * 0.34;
-      rightWing.rotation.y = 0.85 - Math.sin(t * 8) * 0.34;
+      halo.scale.setScalar(1.02 + Math.sin(t * 2.2) * 0.08 * pulse);
+      halo.rotation.z = t * 0.34;
+      halo.material.opacity = spriteMood === "alert" ? 0.28 : 0.24 + Math.sin(t * 3) * 0.04 * pulse;
+      aura.scale.setScalar(1.02 + Math.sin(t * 1.8) * 0.08 * pulse);
+      aura.material.opacity = spriteMood === "glow" ? 0.2 : 0.1 + Math.sin(t * 2) * 0.025;
+      tideMirror.scale.x = 1.22 + Math.sin(t * 2.6) * 0.08;
+      tideMirror.scale.y = 0.2 + Math.cos(t * 2.4) * 0.025;
+      tideMirror.material.opacity = spriteMood === "thinking" ? 0.54 : 0.32 + Math.sin(t * 2.4) * 0.06;
+      leftWing.rotation.y = -0.95 + Math.sin(t * 7.5) * 0.3;
+      rightWing.rotation.y = 0.95 - Math.sin(t * 7.5) * 0.3;
       particles.rotation.y = t * 0.08;
       particles.rotation.x = Math.sin(t * 0.4) * 0.08;
       const blink = Math.sin(t * 3.7) > 0.985 ? 0.18 : 1;
@@ -1437,6 +1488,7 @@ renderSoundControl();
 initOceanSoundAutoplay();
 renderBookingState();
 renderSpriteChats();
+renderCompanionConnection();
 document.querySelector("#ai-insight").textContent = insightForMoods();
 updateMapLocks();
 updateMapWeather();

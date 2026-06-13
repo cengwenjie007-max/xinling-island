@@ -1169,19 +1169,51 @@ input[type="text"] {
 
 .sprite-stage {
   position: relative;
-  min-height: 220px;
+  min-height: 260px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(218, 251, 255, 0.42);
+  border-radius: 8px;
   background:
-    radial-gradient(circle at 50% 46%, rgba(151, 255, 221, 0.34), transparent 28%),
-    linear-gradient(135deg, rgba(9, 44, 55, 0.82), rgba(16, 96, 101, 0.46));
-  box-shadow: inset 0 0 42px rgba(141, 255, 224, 0.18);
+    radial-gradient(circle at 50% 42%, rgba(123, 245, 236, 0.28), transparent 24%),
+    radial-gradient(circle at 82% 18%, rgba(255, 226, 147, 0.18), transparent 20%),
+    linear-gradient(135deg, rgba(5, 24, 39, 0.96), rgba(10, 74, 88, 0.72)),
+    url("assets/healing-forest-bg.png") center / cover;
+  box-shadow:
+    inset 0 0 60px rgba(141, 255, 224, 0.16),
+    0 24px 58px rgba(1, 21, 31, 0.22);
+}
+
+.sprite-stage::before,
+.sprite-stage::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.sprite-stage::before {
+  inset: 0;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.82) 0 1px, transparent 2px) 24px 36px / 76px 48px,
+    radial-gradient(circle, rgba(255, 226, 147, 0.72) 0 1px, transparent 2px) 14px 12px / 54px 38px;
+  opacity: 0.38;
+}
+
+.sprite-stage::after {
+  left: 12%;
+  right: 12%;
+  bottom: 22px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(103, 232, 221, 0.34), transparent 68%);
+  animation: spriteTideMirror 4.2s ease-in-out infinite;
 }
 
 .sprite-stage canvas {
   display: block;
   width: 100%;
-  height: 220px;
+  height: 260px;
+  position: relative;
+  z-index: 1;
 }
 
 .sprite-fallback {
@@ -1190,20 +1222,78 @@ input[type="text"] {
   display: none;
   place-items: center;
   pointer-events: none;
+  z-index: 1;
 }
 
-.sprite-fallback span {
-  display: grid;
-  width: 96px;
-  height: 96px;
-  place-items: center;
+.sprite-css-core,
+.sprite-css-ring,
+.sprite-css-wing {
+  position: absolute;
+  display: block;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+}
+
+.sprite-css-core {
+  width: 92px;
+  height: 92px;
   border-radius: 50%;
-  color: #102d3a;
-  background: radial-gradient(circle, #fff7bc, #87d9d2);
-  box-shadow: 0 0 42px rgba(165, 255, 222, 0.8);
-  font-size: 36px;
-  font-weight: 900;
+  background:
+    radial-gradient(circle at 42% 34%, rgba(255, 255, 255, 0.92), transparent 17%),
+    radial-gradient(circle, #a9fff3 0 42%, #39cdda 66%, rgba(57, 205, 218, 0.18) 68%);
+  box-shadow:
+    0 0 42px rgba(103, 232, 221, 0.9),
+    0 0 92px rgba(255, 226, 147, 0.26);
   animation: spriteFloat 3.4s ease-in-out infinite;
+}
+
+.sprite-css-core::before,
+.sprite-css-core::after {
+  position: absolute;
+  top: 40%;
+  width: 6px;
+  height: 6px;
+  content: "";
+  border-radius: 50%;
+  background: #102d3a;
+}
+
+.sprite-css-core::before {
+  left: 34%;
+}
+
+.sprite-css-core::after {
+  right: 34%;
+}
+
+.sprite-css-wing {
+  width: 52px;
+  height: 92px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.64), rgba(154, 245, 232, 0.18));
+  filter: blur(0.2px);
+  animation: spriteWing 1.7s ease-in-out infinite;
+}
+
+.sprite-css-wing.left {
+  margin-left: -74px;
+  transform: rotate(-16deg);
+}
+
+.sprite-css-wing.right {
+  margin-left: 74px;
+  transform: rotate(16deg);
+  animation-delay: -0.2s;
+}
+
+.sprite-css-ring {
+  width: 150px;
+  height: 42px;
+  border: 2px solid rgba(255, 226, 147, 0.58);
+  border-radius: 50%;
+  margin-top: 62px;
+  animation: spriteRing 4.8s linear infinite;
 }
 
 .sprite-stage.no-webgl canvas {
@@ -1224,22 +1314,75 @@ input[type="text"] {
   }
 }
 
+@keyframes spriteWing {
+  0%, 100% { scale: 0.92 1; opacity: 0.46; }
+  50% { scale: 1.08 1.04; opacity: 0.72; }
+}
+
+@keyframes spriteRing {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+
+@keyframes spriteTideMirror {
+  0%, 100% { opacity: 0.46; transform: scaleX(0.94); }
+  50% { opacity: 0.78; transform: scaleX(1.06); }
+}
+
 .sprite-card {
   display: flex;
   gap: 18px;
   align-items: flex-start;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.84), rgba(226, 248, 246, 0.72));
 }
 
 .sprite-orb {
-  display: grid;
+  position: relative;
+  display: block;
   flex: 0 0 64px;
   width: 64px;
   height: 64px;
-  place-items: center;
   border-radius: 50%;
-  color: #102d3a;
-  background: radial-gradient(circle, #fff7bc, #87d9d2);
-  font-weight: 900;
+  background:
+    radial-gradient(circle at 42% 34%, rgba(255, 255, 255, 0.95), transparent 18%),
+    radial-gradient(circle, #b9fff6 0 42%, #42d3df 70%, rgba(66, 211, 223, 0.16) 72%);
+  box-shadow: 0 0 28px rgba(103, 232, 221, 0.7);
+}
+
+.sprite-orb::before,
+.sprite-orb::after {
+  position: absolute;
+  top: 18px;
+  width: 28px;
+  height: 42px;
+  content: "";
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.sprite-orb::before {
+  left: -16px;
+  transform: rotate(-14deg);
+}
+
+.sprite-orb::after {
+  right: -16px;
+  transform: rotate(14deg);
+}
+
+.sprite-orb i {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 76px;
+  height: 18px;
+  border: 1px solid rgba(255, 226, 147, 0.62);
+  border-radius: 50%;
+  transform: translateX(-50%);
 }
 
 .sprite-card strong {
@@ -1259,7 +1402,8 @@ input[type="text"] {
   max-height: 280px;
   gap: 10px;
   overflow: auto;
-  padding-right: 4px;
+  padding: 4px 8px 4px 0;
+  scrollbar-color: rgba(103, 150, 160, 0.58) transparent;
 }
 
 .sprite-message {
@@ -1267,14 +1411,18 @@ input[type="text"] {
   gap: 6px;
   max-width: 88%;
   padding: 14px 16px;
-  background: rgba(255, 253, 248, 0.74);
+  border: 1px solid rgba(8, 55, 68, 0.08);
+  border-radius: 8px 8px 8px 2px;
+  background: rgba(255, 253, 248, 0.82);
   color: var(--muted);
   line-height: 1.7;
+  box-shadow: 0 10px 26px rgba(8, 55, 68, 0.08);
 }
 
 .sprite-message.user {
   justify-self: end;
-  background: rgba(230, 249, 244, 0.86);
+  border-radius: 8px 8px 2px 8px;
+  background: rgba(218, 250, 248, 0.9);
   color: var(--deep);
 }
 
@@ -1292,9 +1440,18 @@ input[type="text"] {
 .sprite-status {
   min-height: 24px;
   margin: 0;
-  color: var(--muted);
+  padding: 12px 14px;
+  border-left: 3px solid var(--warm);
+  border-radius: 0 8px 8px 0;
+  color: #4b626c;
+  background: rgba(255, 253, 248, 0.56);
   font-size: 14px;
   line-height: 1.6;
+}
+
+.sprite-status[data-tone="alert"],
+.sprite-status[data-tone="fallback"] {
+  border-left-color: var(--warm);
 }
 
 .chat-input-row {
