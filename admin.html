@@ -24,7 +24,7 @@
       <section class="portal-card">
         <p class="section-label">ADMIN</p>
         <h1>预约线索后台</h1>
-        <p>查看用户提交的预约线索，识别高风险内容，并分配给倾听员或咨询师。</p>
+        <p>查看用户提交的预约线索，识别高风险内容，并分配给倾听员或咨询师。后台默认只展示必要摘要，避免暴露客户隐私。</p>
         <div class="portal-filters">
           <select id="admin-status">
             <option value="">全部状态</option>
@@ -34,7 +34,7 @@
             <option value="completed">已完成</option>
             <option value="unreachable">无法联系</option>
           </select>
-          <label><input id="admin-risk" type="checkbox" /> 只看高风险</label>
+          <label class="inline-check"><input id="admin-risk" type="checkbox" /> 只看高风险</label>
           <button class="solid-button" type="button" id="load-admin-requests">刷新</button>
         </div>
         <div class="portal-list" id="admin-request-list"></div>

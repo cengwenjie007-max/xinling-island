@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>心灵岛屿 | 登录</title>
+    <title>心灵岛屿 | 登录注册</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="backend-config.js" defer></script>
@@ -13,7 +13,7 @@
   <body class="portal-page">
     <header class="site-header tests-header">
       <a class="brand" href="index.html">心灵岛屿</a>
-      <nav class="site-nav" aria-label="后台导航">
+      <nav class="site-nav" aria-label="账号导航">
         <a href="index.html">首页</a>
         <a href="tests.html">心理测试</a>
         <a href="provider.html">服务者后台</a>
@@ -21,29 +21,87 @@
       </nav>
       <a class="nav-link" href="index.html">返回</a>
     </header>
-    <main class="portal-shell">
-      <section class="portal-card" aria-labelledby="login-title">
+
+    <main class="portal-shell auth-shell">
+      <section class="portal-card auth-hero" aria-labelledby="login-title">
         <p class="section-label">ACCOUNT</p>
-        <h1 id="login-title">登录心灵岛屿</h1>
-        <p>登录后，情绪记录、测试报告和预约线索可以同步到云端。未配置 Supabase 时，网站仍会保留本地体验。</p>
-        <label>
-          邮箱
-          <input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com" />
-        </label>
-        <label>
-          密码
-          <input id="auth-password" type="password" autocomplete="current-password" placeholder="至少 6 位" />
-        </label>
-        <label>
-          昵称
-          <input id="auth-nickname" type="text" placeholder="注册时可填写" />
-        </label>
-        <div class="portal-actions">
-          <button class="solid-button" type="button" id="sign-in">登录</button>
-          <button class="ghost-button" type="button" id="sign-up">注册</button>
-          <button class="ghost-button" type="button" id="sign-out">退出</button>
-        </div>
+        <h1 id="login-title">进入你的心灵岛屿</h1>
+        <p>
+          客户可以注册普通账号，保存自己的情绪记录、测试报告和预约线索。管理员账号只允许第一次初始化，
+          初始化完成后入口会自动关闭。
+        </p>
         <p class="booking-summary" id="auth-status" aria-live="polite">正在检查后端配置...</p>
+        <section class="session-panel" id="session-panel" hidden>
+          <div>
+            <span class="role-pill" id="session-role">未登录</span>
+            <strong id="session-email">尚未登录</strong>
+          </div>
+          <div class="portal-actions" id="session-actions"></div>
+          <button class="ghost-button" type="button" id="sign-out">退出登录</button>
+        </section>
+      </section>
+
+      <section class="auth-grid" aria-label="登录注册入口">
+        <article class="portal-card auth-panel">
+          <p class="section-label">CLIENT LOGIN</p>
+          <h2>客户登录</h2>
+          <p>已经有账号的岛民，可以从这里回到自己的记录。</p>
+          <label>
+            邮箱
+            <input id="login-email" type="email" autocomplete="email" placeholder="you@example.com" />
+          </label>
+          <label>
+            密码
+            <input id="login-password" type="password" autocomplete="current-password" placeholder="至少 6 位" />
+          </label>
+          <button class="solid-button" type="button" id="sign-in">登录</button>
+        </article>
+
+        <article class="portal-card auth-panel">
+          <p class="section-label">CLIENT REGISTER</p>
+          <h2>客户注册</h2>
+          <p>客户注册后默认是普通用户，不能进入管理员后台。</p>
+          <label>
+            昵称
+            <input id="register-nickname" type="text" maxlength="30" autocomplete="nickname" placeholder="例如：海边来客" />
+          </label>
+          <label>
+            邮箱
+            <input id="register-email" type="email" autocomplete="email" placeholder="you@example.com" />
+          </label>
+          <label>
+            密码
+            <input id="register-password" type="password" autocomplete="new-password" placeholder="至少 6 位" />
+          </label>
+          <button class="solid-button" type="button" id="customer-sign-up">注册普通账号</button>
+          <p class="form-hint">如果 Supabase 开启邮箱确认，请先完成邮箱确认后再登录。</p>
+        </article>
+
+        <article class="portal-card auth-panel admin-setup" id="bootstrap-panel" hidden>
+          <p class="section-label">FIRST ADMIN</p>
+          <h2>管理员初始化</h2>
+          <p>
+            仅在系统没有任何管理员时开放。请只用你自己的邮箱创建第一个管理员账号，
+            不要把管理员密码写进网页或发给别人。
+          </p>
+          <label>
+            管理员昵称
+            <input id="bootstrap-nickname" type="text" maxlength="30" autocomplete="nickname" placeholder="站长" />
+          </label>
+          <label>
+            管理员邮箱
+            <input id="bootstrap-email" type="email" autocomplete="email" placeholder="admin@example.com" />
+          </label>
+          <label>
+            管理员密码
+            <input id="bootstrap-password" type="password" autocomplete="new-password" placeholder="至少 8 位更安全" />
+          </label>
+          <div class="portal-actions">
+            <button class="solid-button" type="button" id="bootstrap-admin">注册并初始化管理员</button>
+            <button class="ghost-button" type="button" id="bootstrap-current">使用当前登录账号初始化</button>
+          </div>
+          <p class="form-hint">初始化成功后，这个入口会关闭；后续客户注册仍然保留。</p>
+        </article>
       </section>
     </main>
   </body>

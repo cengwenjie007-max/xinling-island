@@ -2792,6 +2792,10 @@ body {
   width: min(1180px, calc(100% - 32px));
 }
 
+.portal-shell.auth-shell {
+  width: min(1240px, calc(100% - 32px));
+}
+
 .portal-card {
   display: grid;
   gap: 18px;
@@ -2806,6 +2810,78 @@ body {
   margin: 0;
   font-size: clamp(42px, 8vw, 88px);
   line-height: 1.02;
+}
+
+.portal-card h2 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 44px);
+  line-height: 1.05;
+}
+
+.portal-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.auth-hero {
+  margin-bottom: 18px;
+  background:
+    linear-gradient(130deg, rgba(255, 253, 248, 0.9), rgba(226, 250, 247, 0.72)),
+    radial-gradient(circle at 82% 18%, rgba(112, 230, 221, 0.34), transparent 28%);
+}
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.auth-panel {
+  align-content: start;
+  padding: clamp(22px, 3vw, 34px);
+  background: rgba(255, 253, 248, 0.78);
+}
+
+.auth-panel.admin-setup {
+  border-color: rgba(245, 197, 92, 0.72);
+  background:
+    linear-gradient(150deg, rgba(255, 249, 231, 0.86), rgba(225, 252, 248, 0.72)),
+    radial-gradient(circle at 20% 16%, rgba(245, 197, 92, 0.28), transparent 30%);
+}
+
+.auth-panel[hidden],
+.session-panel[hidden] {
+  display: none;
+}
+
+.session-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border: 1px solid rgba(10, 127, 144, 0.24);
+  background: rgba(255, 253, 248, 0.7);
+}
+
+.session-panel > div:first-child {
+  display: grid;
+  gap: 8px;
+}
+
+.role-pill {
+  width: fit-content;
+  padding: 5px 10px;
+  border: 1px solid rgba(10, 127, 144, 0.24);
+  border-radius: 999px;
+  background: rgba(10, 127, 144, 0.12);
+  color: var(--sea);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
 }
 
 .portal-card label {
@@ -2831,6 +2907,19 @@ body {
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
+}
+
+.inline-check {
+  display: inline-flex !important;
+  grid-template-columns: none !important;
+  gap: 8px !important;
+  align-items: center;
+}
+
+.inline-check input {
+  min-height: auto;
+  width: 18px;
+  height: 18px;
 }
 
 .portal-list {
@@ -2863,6 +2952,39 @@ body {
   margin: 0;
   color: var(--muted);
   line-height: 1.7;
+}
+
+.portal-muted {
+  opacity: 0.78;
+}
+
+@media (max-width: 980px) {
+  .auth-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .portal-shell {
+    width: min(100% - 20px, 920px);
+    padding-top: 96px;
+  }
+
+  .portal-card h1 {
+    font-size: clamp(38px, 14vw, 58px);
+  }
+
+  .portal-actions,
+  .portal-filters,
+  .session-panel {
+    align-items: stretch;
+  }
+
+  .portal-actions > *,
+  .portal-filters > *,
+  .session-panel > * {
+    width: 100%;
+  }
 }
 
 .ritual-card {

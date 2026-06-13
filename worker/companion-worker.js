@@ -34,7 +34,7 @@ async function supabaseFetch(env, path, options = {}) {
   });
   const data = await response.json().catch(() => null);
   if (!response.ok) {
-    return { error: data?.message || data?.error || "Supabase request failed.", status: response.status, detail: data };
+    return { error: data?.message || data?.error || "Supabase request failed.", status: response.status };
   }
   return { data, status: response.status };
 }
@@ -54,8 +54,82 @@ async function getCurrentUser(request, env) {
 }
 
 async function getProfile(env, userId) {
-  const result = await supabaseFetch(env, `/rest/v1/profiles?id=eq.${userId}&select=*`);
+  const result = await supabaseFetch(env, `/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=id,email,nickname,role,status`);
   return result.data?.[0] || null;
+}
+
+function publicProfile(profile) {
+  if (!profile) return null;
+  return {
+    id: profile.id,
+    email: profile.email || "",
+    nickname: profile.nickname || "",
+    role: profile.role || "user",
+    status: profile.status || "active"
+  };
+}
+
+async function ensureProfileForUser(env, user) {
+  const current = await getProfile(env, user.id);
+  if (current) return current;
+  const row = {
+    id: user.id,
+    email: user.email || "",
+    nickname: user.user_metadata?.nickname || (user.email ? user.email.split("@")[0] : "岛民"),
+    role: "user",
+    status: "active"
+  };
+  const result = await supabaseFetch(env, "/rest/v1/profiles", {
+    method: "POST",
+    body: JSON.stringify([row])
+  });
+  return result.data?.[0] || null;
+}
+
+async function countAdmins(env) {
+  const result = await supabaseFetch(env, "/rest/v1/profiles?select=id&role=eq.admin&limit=1");
+  if (result.error) return { count: 0, error: result };
+  return { count: Array.isArray(result.data) ? result.data.length : 0 };
+}
+
+async function handleAuthMe(env, user) {
+  if (!user?.id) return json({ user: null, profile: null });
+  const profile = await ensureProfileForUser(env, user);
+  return json({
+    user: {
+      id: user.id,
+      email: user.email || ""
+    },
+    profile: publicProfile(profile)
+  });
+}
+
+async function handleBootstrapStatus(env) {
+  const admins = await countAdmins(env);
+  if (admins.error) return json({ error: "暂时无法检查管理员状态。" }, admins.error.status || 500);
+  return json({ canBootstrap: admins.count === 0, hasAdmin: admins.count > 0 });
+}
+
+async function handleBootstrapAdmin(env, user) {
+  const authError = requireUser(user);
+  if (authError) return authError;
+  const admins = await countAdmins(env);
+  if (admins.error) return json({ error: "暂时无法初始化管理员。" }, admins.error.status || 500);
+  if (admins.count > 0) return json({ error: "管理员已经初始化，入口已关闭。" }, 403);
+
+  const profile = await ensureProfileForUser(env, user);
+  if (!profile) return json({ error: "无法创建账号资料，请稍后再试。" }, 500);
+
+  const result = await supabaseFetch(env, `/rest/v1/profiles?id=eq.${encodeURIComponent(user.id)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ role: "admin", status: "active" })
+  });
+  if (result.error) return json({ error: "管理员初始化失败。" }, result.status || 500);
+  await supabaseFetch(env, "/rest/v1/audit_logs", {
+    method: "POST",
+    body: JSON.stringify([{ actor_id: user.id, action: "bootstrap_admin", target_table: "profiles", target_id: user.id, metadata: {} }])
+  });
+  return json({ profile: publicProfile(result.data?.[0]) });
 }
 
 function requireUser(user) {
@@ -212,6 +286,16 @@ function normalizeBottleContent(content) {
   return String(content || "").replace(/\s+/g, " ").trim().slice(0, 180);
 }
 
+function publicCommunityItem(item) {
+  if (!item) return null;
+  return {
+    islander_no: item.islander_no,
+    mood: item.mood || null,
+    content: item.content,
+    created_at: item.created_at
+  };
+}
+
 async function handleBottleCreate(request, env, user) {
   const payload = await request.json().catch(() => ({}));
   const content = normalizeBottleContent(payload.content);
@@ -240,13 +324,13 @@ async function handleBottleCreate(request, env, user) {
     method: "POST",
     body: JSON.stringify([{ ...row, mood: undefined }])
   });
-  return json({ bottle: result.data?.[0], safety: "normal" });
+  return json({ bottle: publicCommunityItem(result.data?.[0]), safety: "normal" });
 }
 
 async function handleRandomBottle(env) {
   const result = await supabaseFetch(
     env,
-    "/rest/v1/drift_bottles?select=*&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&order=created_at.desc&limit=80"
+    "/rest/v1/drift_bottles?select=islander_no,mood,content,created_at&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&order=created_at.desc&limit=80"
   );
   if (result.error) return json({ error: result.error }, result.status);
   const bottles = result.data || [];
@@ -306,7 +390,7 @@ async function handleMoodWall(request, env, user) {
 async function handleIslandLogs(env) {
   const result = await supabaseFetch(
     env,
-    "/rest/v1/island_logs?select=*&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&order=created_at.desc&limit=8"
+    "/rest/v1/island_logs?select=islander_no,content,created_at&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&order=created_at.desc&limit=8"
   );
   if (result.error) return json({ error: result.error }, result.status);
   return json({ logs: result.data || [] });
@@ -359,11 +443,11 @@ async function handleAdminRequests(request, env, user, pathname) {
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
     const risk = url.searchParams.get("risk");
-    let query = "/rest/v1/consult_requests?select=*,profiles(email,nickname),assignments(*,providers(display_name,title))&order=created_at.desc&limit=100";
+    let query = "/rest/v1/consult_requests?select=id,service_type,topic,summary,risk_flag,source,status,created_at,updated_at,assignments(id,status,providers(display_name,title))&order=created_at.desc&limit=100";
     if (status) query += `&status=eq.${encodeURIComponent(status)}`;
     if (risk === "true") query += "&risk_flag=eq.true";
     const result = await supabaseFetch(env, query);
-    if (result.error) return json({ error: result.error }, result.status);
+    if (result.error) return json({ error: "线索加载失败，请稍后再试。" }, result.status);
     return json({ requests: result.data || [] });
   }
   const id = pathname.split("/").at(-1);
@@ -374,7 +458,7 @@ async function handleAdminRequests(request, env, user, pathname) {
     method: "POST",
     body: JSON.stringify([{ consult_request_id: id, provider_id: providerId, status: "assigned" }])
   });
-  if (assignment.error) return json({ error: assignment.error }, assignment.status);
+  if (assignment.error) return json({ error: "分配失败，请稍后再试。" }, assignment.status);
   await supabaseFetch(env, `/rest/v1/consult_requests?id=eq.${id}`, {
     method: "PATCH",
     body: JSON.stringify({ status: "assigned" })
@@ -394,8 +478,8 @@ async function handleProviderAssignments(request, env, user, pathname) {
   if (!providerIds.length && role.profile.role !== "admin") return json({ assignments: [] });
   if (request.method === "GET") {
     const filter = role.profile.role === "admin" ? "" : `&provider_id=in.(${providerIds.join(",")})`;
-    const result = await supabaseFetch(env, `/rest/v1/assignments?select=*,consult_requests(*),providers(display_name,title)&order=created_at.desc${filter}`);
-    if (result.error) return json({ error: result.error }, result.status);
+    const result = await supabaseFetch(env, `/rest/v1/assignments?select=id,status,created_at,consult_requests(id,service_type,topic,summary,risk_flag,source,status,created_at),providers(display_name,title)&order=created_at.desc${filter}`);
+    if (result.error) return json({ error: "分配加载失败，请稍后再试。" }, result.status);
     return json({ assignments: result.data || [] });
   }
   const id = pathname.split("/").at(-1);
@@ -405,7 +489,7 @@ async function handleProviderAssignments(request, env, user, pathname) {
     method: "PATCH",
     body: JSON.stringify({ status: nextStatus })
   });
-  if (result.error) return json({ error: result.error }, result.status);
+  if (result.error) return json({ error: "状态更新失败，请稍后再试。" }, result.status);
   return json({ assignment: result.data?.[0] });
 }
 
@@ -418,6 +502,9 @@ export default {
 
     try {
       if (pathname === "" || pathname === "/api/health") return json({ ok: true, service: "xinling-island-api" });
+      if (pathname === "/api/auth/me" && request.method === "GET") return handleAuthMe(env, user);
+      if (pathname === "/api/auth/bootstrap-status" && request.method === "GET") return handleBootstrapStatus(env);
+      if (pathname === "/api/auth/bootstrap-admin" && request.method === "POST") return handleBootstrapAdmin(env, user);
       if (pathname === "/api/companion" && request.method === "POST") return handleCompanion(request, env, user);
       if (pathname === "/api/moods") return handleMoods(request, env, user);
       if (pathname === "/api/tests/sessions" && request.method === "POST") return handleTestSession(request, env, user);

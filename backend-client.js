@@ -3,6 +3,14 @@
   const hasSupabase = Boolean(config.supabaseUrl && config.supabaseAnonKey && window.supabase);
   const client = hasSupabase ? window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey) : null;
 
+  function hasSupabaseConfig() {
+    return Boolean(client);
+  }
+
+  function hasApiConfig() {
+    return Boolean(config.apiBaseUrl);
+  }
+
   function isConfigured() {
     return Boolean(client && config.apiBaseUrl);
   }
@@ -52,6 +60,21 @@
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || `API 请求失败：${response.status}`);
     return data;
+  }
+
+  async function getAuthProfile() {
+    return apiFetch("/api/auth/me");
+  }
+
+  async function getBootstrapStatus() {
+    return apiFetch("/api/auth/bootstrap-status");
+  }
+
+  async function bootstrapAdmin() {
+    return apiFetch("/api/auth/bootstrap-admin", {
+      method: "POST",
+      body: JSON.stringify({})
+    });
   }
 
   async function saveMood(entry) {
@@ -123,6 +146,8 @@
 
   window.XinlingBackend = {
     client,
+    hasSupabase: hasSupabaseConfig,
+    hasApi: hasApiConfig,
     isConfigured,
     getSession,
     getUser,
@@ -130,6 +155,9 @@
     signUp,
     signOut,
     apiFetch,
+    getAuthProfile,
+    getBootstrapStatus,
+    bootstrapAdmin,
     saveMood,
     listMoods,
     saveTestSession,
