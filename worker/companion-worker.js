@@ -1,5 +1,6 @@
-const MODEL = "@cf/meta/llama-3.1-8b-instruct";
-const CRISIS_PATTERN = /自杀|想死|不想活|活不下去|伤害自己|伤害别人|结束生命|轻生|割腕|跳楼|没必要活|无法保证安全|撑不下去/;
+const MODEL = "@cf/meta/llama-3.2-3b-instruct";
+const CRISIS_PATTERN =
+  /自杀|想死|不想活|活不下去|伤害自己|伤害别人|结束生命|轻生|割腕|跳楼|没必要活|无法保证安全|撑不下去/;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,14 +28,14 @@ function supabaseHeaders(env, extra = {}) {
 }
 
 async function supabaseFetch(env, path, options = {}) {
-  if (!requiredEnv(env)) return { error: "Supabase env is not configured.", status: 500 };
+  if (!requiredEnv(env)) return { error: "后端环境变量还没有配置完整。", status: 500 };
   const response = await fetch(`${env.SUPABASE_URL}${path}`, {
     ...options,
     headers: supabaseHeaders(env, options.headers)
   });
   const data = await response.json().catch(() => null);
   if (!response.ok) {
-    return { error: data?.message || data?.error || "Supabase request failed.", status: response.status };
+    return { error: (data && (data.message || data.error)) || "后端请求失败。", status: response.status };
   }
   return { data, status: response.status };
 }
@@ -54,8 +55,11 @@ async function getCurrentUser(request, env) {
 }
 
 async function getProfile(env, userId) {
-  const result = await supabaseFetch(env, `/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=id,email,nickname,role,status`);
-  return result.data?.[0] || null;
+  const result = await supabaseFetch(
+    env,
+    `/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=id,email,nickname,role,status`
+  );
+  return (result.data && result.data[0]) || null;
 }
 
 function publicProfile(profile) {
@@ -75,7 +79,7 @@ async function ensureProfileForUser(env, user) {
   const row = {
     id: user.id,
     email: user.email || "",
-    nickname: user.user_metadata?.nickname || (user.email ? user.email.split("@")[0] : "岛民"),
+    nickname: (user.user_metadata && user.user_metadata.nickname) || (user.email ? user.email.split("@")[0] : "岛民"),
     role: "user",
     status: "active"
   };
@@ -83,7 +87,7 @@ async function ensureProfileForUser(env, user) {
     method: "POST",
     body: JSON.stringify([row])
   });
-  return result.data?.[0] || null;
+  return (result.data && result.data[0]) || null;
 }
 
 async function countAdmins(env) {
@@ -93,13 +97,10 @@ async function countAdmins(env) {
 }
 
 async function handleAuthMe(env, user) {
-  if (!user?.id) return json({ user: null, profile: null });
+  if (!user || !user.id) return json({ user: null, profile: null });
   const profile = await ensureProfileForUser(env, user);
   return json({
-    user: {
-      id: user.id,
-      email: user.email || ""
-    },
+    user: { id: user.id, email: user.email || "" },
     profile: publicProfile(profile)
   });
 }
@@ -127,13 +128,21 @@ async function handleBootstrapAdmin(env, user) {
   if (result.error) return json({ error: "管理员初始化失败。" }, result.status || 500);
   await supabaseFetch(env, "/rest/v1/audit_logs", {
     method: "POST",
-    body: JSON.stringify([{ actor_id: user.id, action: "bootstrap_admin", target_table: "profiles", target_id: user.id, metadata: {} }])
+    body: JSON.stringify([
+      {
+        actor_id: user.id,
+        action: "bootstrap_admin",
+        target_table: "profiles",
+        target_id: user.id,
+        metadata: {}
+      }
+    ])
   });
-  return json({ profile: publicProfile(result.data?.[0]) });
+  return json({ profile: publicProfile((result.data && result.data[0]) || null) });
 }
 
 function requireUser(user) {
-  if (!user?.id) return json({ error: "请先登录。" }, 401);
+  if (!user || !user.id) return json({ error: "请先登录。" }, 401);
   return null;
 }
 
@@ -160,27 +169,29 @@ function sanitizeHistory(history) {
     }));
 }
 
+async function saveSpriteChat(env, userId, role, content, safety) {
+  if (!userId) return;
+  await supabaseFetch(env, "/rest/v1/sprite_chats", {
+    method: "POST",
+    body: JSON.stringify([{ user_id: userId, role, content: String(content || "").slice(0, 500), safety }])
+  });
+}
+
 async function handleCompanion(request, env, user) {
   const payload = await request.json().catch(() => ({}));
   const message = String(payload.message || "").trim().slice(0, 500);
-  if (!message) return json({ error: "Message is required" }, 400);
+  if (!message) return json({ error: "请先写下一句话。" }, 400);
+
   const safety = CRISIS_PATTERN.test(message) ? "crisis" : "normal";
-  if (user?.id) {
-    await supabaseFetch(env, "/rest/v1/sprite_chats", {
-      method: "POST",
-      body: JSON.stringify([{ user_id: user.id, role: "user", content: message, safety }])
-    });
-  }
+  await saveSpriteChat(env, user && user.id, "user", message, safety);
+
   if (safety === "crisis") {
     const reply = crisisReply();
-    if (user?.id) {
-      await supabaseFetch(env, "/rest/v1/sprite_chats", {
-        method: "POST",
-        body: JSON.stringify([{ user_id: user.id, role: "assistant", content: reply, safety: "crisis" }])
-      });
-    }
+    await saveSpriteChat(env, user && user.id, "assistant", reply, "crisis");
     return json({ reply, safety: "crisis" });
   }
+
+  if (!env.AI || !env.AI.run) return json({ error: "云端 AI 暂时没有连上。" }, 503);
 
   const history = sanitizeHistory(payload.history);
   const system = [
@@ -197,15 +208,10 @@ async function handleCompanion(request, env, user) {
       max_tokens: 220
     });
     const reply = String(result.response || result.reply || "").trim() || "我听见了。先把呼吸放慢一点，我们只处理眼前最小的一步。";
-    if (user?.id) {
-      await supabaseFetch(env, "/rest/v1/sprite_chats", {
-        method: "POST",
-        body: JSON.stringify([{ user_id: user.id, role: "assistant", content: reply, safety: "normal" }])
-      });
-    }
+    await saveSpriteChat(env, user && user.id, "assistant", reply, "normal");
     return json({ reply, safety: "normal" });
   } catch (_error) {
-    return json({ error: "AI service unavailable" }, 503);
+    return json({ error: "云端 AI 暂时没有连上。" }, 503);
   }
 }
 
@@ -213,7 +219,10 @@ async function handleMoods(request, env, user) {
   const authError = requireUser(user);
   if (authError) return authError;
   if (request.method === "GET") {
-    const result = await supabaseFetch(env, `/rest/v1/mood_entries?user_id=eq.${user.id}&select=*&order=created_at.desc&limit=30`);
+    const result = await supabaseFetch(
+      env,
+      `/rest/v1/mood_entries?user_id=eq.${user.id}&select=*&order=created_at.desc&limit=30`
+    );
     if (result.error) return json({ error: result.error }, result.status);
     return json({ moods: result.data || [] });
   }
@@ -224,9 +233,12 @@ async function handleMoods(request, env, user) {
     energy: Math.max(1, Math.min(10, Number(payload.energy || 5))),
     note: String(payload.note || "").slice(0, 500)
   };
-  const result = await supabaseFetch(env, "/rest/v1/mood_entries", { method: "POST", body: JSON.stringify([entry]) });
+  const result = await supabaseFetch(env, "/rest/v1/mood_entries", {
+    method: "POST",
+    body: JSON.stringify([entry])
+  });
   if (result.error) return json({ error: result.error }, result.status);
-  return json({ mood: result.data?.[0] });
+  return json({ mood: (result.data && result.data[0]) || null });
 }
 
 async function handleTestSession(request, env, user) {
@@ -243,9 +255,12 @@ async function handleTestSession(request, env, user) {
     risk_flag: Boolean(payload.riskFlag),
     report: payload.report && typeof payload.report === "object" ? payload.report : {}
   };
-  const result = await supabaseFetch(env, "/rest/v1/test_sessions", { method: "POST", body: JSON.stringify([session]) });
+  const result = await supabaseFetch(env, "/rest/v1/test_sessions", {
+    method: "POST",
+    body: JSON.stringify([session])
+  });
   if (result.error) return json({ error: result.error }, result.status);
-  return json({ session: result.data?.[0] });
+  return json({ session: (result.data && result.data[0]) || null });
 }
 
 async function handleConsultRequest(request, env, user) {
@@ -254,7 +269,7 @@ async function handleConsultRequest(request, env, user) {
   if (!topic) return json({ error: "请填写求助主题。" }, 400);
   const riskFlag = Boolean(payload.riskFlag) || CRISIS_PATTERN.test(topic);
   const row = {
-    user_id: user?.id || null,
+    user_id: (user && user.id) || null,
     service_type: String(payload.serviceType || "倾听员陪伴").slice(0, 60),
     topic,
     summary: String(payload.summary || "").slice(0, 800),
@@ -262,27 +277,34 @@ async function handleConsultRequest(request, env, user) {
     source: String(payload.source || "site").slice(0, 50),
     test_session_id: payload.testSessionId || null
   };
-  const result = await supabaseFetch(env, "/rest/v1/consult_requests", { method: "POST", body: JSON.stringify([row]) });
+  const result = await supabaseFetch(env, "/rest/v1/consult_requests", {
+    method: "POST",
+    body: JSON.stringify([row])
+  });
   if (result.error) return json({ error: result.error }, result.status);
-  return json({ request: result.data?.[0] });
+  return json({ request: (result.data && result.data[0]) || null });
 }
 
 async function handleSpriteChatSave(request, env, user) {
   const authError = requireUser(user);
   if (authError) return authError;
   const payload = await request.json().catch(() => ({}));
+  const content = String(payload.content || "").slice(0, 500);
   const row = {
     user_id: user.id,
     role: payload.role === "assistant" ? "assistant" : "user",
-    content: String(payload.content || "").slice(0, 500),
-    safety: CRISIS_PATTERN.test(String(payload.content || "")) ? "crisis" : "normal"
+    content,
+    safety: CRISIS_PATTERN.test(content) ? "crisis" : "normal"
   };
-  const result = await supabaseFetch(env, "/rest/v1/sprite_chats", { method: "POST", body: JSON.stringify([row]) });
+  const result = await supabaseFetch(env, "/rest/v1/sprite_chats", {
+    method: "POST",
+    body: JSON.stringify([row])
+  });
   if (result.error) return json({ error: result.error }, result.status);
-  return json({ chat: result.data?.[0] });
+  return json({ chat: (result.data && result.data[0]) || null });
 }
 
-function normalizeBottleContent(content) {
+function normalizePublicContent(content) {
   return String(content || "").replace(/\s+/g, " ").trim().slice(0, 180);
 }
 
@@ -298,17 +320,12 @@ function publicCommunityItem(item) {
 
 async function handleBottleCreate(request, env, user) {
   const payload = await request.json().catch(() => ({}));
-  const content = normalizeBottleContent(payload.content);
+  const content = normalizePublicContent(payload.content);
   if (!content) return json({ error: "请先写下一句话。" }, 400);
-  if (CRISIS_PATTERN.test(content)) {
-    return json({
-      bottle: null,
-      safety: "crisis",
-      reply: crisisReply()
-    });
-  }
+  if (CRISIS_PATTERN.test(content)) return json({ bottle: null, safety: "crisis", reply: crisisReply() });
+
   const row = {
-    user_id: user?.id || null,
+    user_id: (user && user.id) || null,
     content,
     mood: String(payload.mood || "").slice(0, 20) || null,
     visibility: "public",
@@ -322,9 +339,17 @@ async function handleBottleCreate(request, env, user) {
   if (result.error) return json({ error: result.error }, result.status);
   await supabaseFetch(env, "/rest/v1/island_logs", {
     method: "POST",
-    body: JSON.stringify([{ ...row, mood: undefined }])
+    body: JSON.stringify([
+      {
+        user_id: (user && user.id) || null,
+        content,
+        visibility: "public",
+        moderation_status: "approved",
+        risk_flag: false
+      }
+    ])
   });
-  return json({ bottle: publicCommunityItem(result.data?.[0]), safety: "normal" });
+  return json({ bottle: publicCommunityItem((result.data && result.data[0]) || null), safety: "normal" });
 }
 
 async function handleRandomBottle(env) {
@@ -351,15 +376,10 @@ async function handleMoodWall(request, env, user) {
   const authError = requireUser(user);
   if (authError) return authError;
   const payload = await request.json().catch(() => ({}));
-  const content = normalizeBottleContent(payload.content);
+  const content = normalizePublicContent(payload.content);
   if (!content) return json({ error: "请先写下一句话。" }, 400);
-  if (CRISIS_PATTERN.test(content)) {
-    return json({
-      post: null,
-      safety: "crisis",
-      reply: crisisReply()
-    });
-  }
+  if (CRISIS_PATTERN.test(content)) return json({ post: null, safety: "crisis", reply: crisisReply() });
+
   const row = {
     user_id: user.id,
     mood: String(payload.mood || "未命名").slice(0, 20),
@@ -373,18 +393,7 @@ async function handleMoodWall(request, env, user) {
     body: JSON.stringify([row])
   });
   if (result.error) return json({ error: result.error }, result.status);
-  const post = result.data?.[0];
-  return json({
-    post: post
-      ? {
-          islander_no: post.islander_no,
-          mood: post.mood,
-          content: post.content,
-          created_at: post.created_at
-        }
-      : null,
-    safety: "normal"
-  });
+  return json({ post: publicCommunityItem((result.data && result.data[0]) || null), safety: "normal" });
 }
 
 async function handleIslandLogs(env) {
@@ -407,12 +416,21 @@ async function handleStats(env) {
   const todayStart = `${today}T00:00:00.000Z`;
   const [profiles, bottles, moods, wallMoods, requests, moodRows, wallMoodRows] = await Promise.all([
     countRows(env, "/rest/v1/profiles?select=id&limit=1000"),
-    countRows(env, "/rest/v1/drift_bottles?select=id&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&limit=1000"),
+    countRows(
+      env,
+      "/rest/v1/drift_bottles?select=id&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&limit=1000"
+    ),
     countRows(env, `/rest/v1/mood_entries?select=id&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`),
-    countRows(env, `/rest/v1/mood_wall_posts?select=id&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`),
+    countRows(
+      env,
+      `/rest/v1/mood_wall_posts?select=id&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`
+    ),
     countRows(env, "/rest/v1/consult_requests?select=id&limit=1000"),
     supabaseFetch(env, `/rest/v1/mood_entries?select=mood&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`),
-    supabaseFetch(env, `/rest/v1/mood_wall_posts?select=mood&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`)
+    supabaseFetch(
+      env,
+      `/rest/v1/mood_wall_posts?select=mood&visibility=eq.public&moderation_status=eq.approved&risk_flag=eq.false&created_at=gte.${encodeURIComponent(todayStart)}&limit=1000`
+    )
   ]);
   const moodCounts = {};
   [...(moodRows.data || []), ...(wallMoodRows.data || [])].forEach((entry) => {
@@ -443,14 +461,17 @@ async function handleAdminRequests(request, env, user, pathname) {
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
     const risk = url.searchParams.get("risk");
-    let query = "/rest/v1/consult_requests?select=id,service_type,topic,summary,risk_flag,source,status,created_at,updated_at,assignments(id,status,providers(display_name,title))&order=created_at.desc&limit=100";
+    let query =
+      "/rest/v1/consult_requests?select=id,service_type,topic,summary,risk_flag,source,status,created_at,updated_at,assignments(id,status,providers(display_name,title))&order=created_at.desc&limit=100";
     if (status) query += `&status=eq.${encodeURIComponent(status)}`;
     if (risk === "true") query += "&risk_flag=eq.true";
     const result = await supabaseFetch(env, query);
     if (result.error) return json({ error: "线索加载失败，请稍后再试。" }, result.status);
     return json({ requests: result.data || [] });
   }
-  const id = pathname.split("/").at(-1);
+
+  const pathParts = pathname.split("/");
+  const id = pathParts[pathParts.length - 1];
   const payload = await request.json().catch(() => ({}));
   const providerId = payload.providerId;
   if (!id || !providerId) return json({ error: "缺少线索或服务者 ID。" }, 400);
@@ -459,15 +480,23 @@ async function handleAdminRequests(request, env, user, pathname) {
     body: JSON.stringify([{ consult_request_id: id, provider_id: providerId, status: "assigned" }])
   });
   if (assignment.error) return json({ error: "分配失败，请稍后再试。" }, assignment.status);
-  await supabaseFetch(env, `/rest/v1/consult_requests?id=eq.${id}`, {
+  await supabaseFetch(env, `/rest/v1/consult_requests?id=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",
     body: JSON.stringify({ status: "assigned" })
   });
   await supabaseFetch(env, "/rest/v1/audit_logs", {
     method: "POST",
-    body: JSON.stringify([{ actor_id: user.id, action: "assign_consult_request", target_table: "consult_requests", target_id: id, metadata: { providerId } }])
+    body: JSON.stringify([
+      {
+        actor_id: user.id,
+        action: "assign_consult_request",
+        target_table: "consult_requests",
+        target_id: id,
+        metadata: { providerId }
+      }
+    ])
   });
-  return json({ assignment: assignment.data?.[0] });
+  return json({ assignment: (assignment.data && assignment.data[0]) || null });
 }
 
 async function handleProviderAssignments(request, env, user, pathname) {
@@ -476,21 +505,29 @@ async function handleProviderAssignments(request, env, user, pathname) {
   const providers = await supabaseFetch(env, `/rest/v1/providers?profile_id=eq.${user.id}&select=id`);
   const providerIds = (providers.data || []).map((provider) => provider.id);
   if (!providerIds.length && role.profile.role !== "admin") return json({ assignments: [] });
+
   if (request.method === "GET") {
     const filter = role.profile.role === "admin" ? "" : `&provider_id=in.(${providerIds.join(",")})`;
-    const result = await supabaseFetch(env, `/rest/v1/assignments?select=id,status,created_at,consult_requests(id,service_type,topic,summary,risk_flag,source,status,created_at),providers(display_name,title)&order=created_at.desc${filter}`);
+    const result = await supabaseFetch(
+      env,
+      `/rest/v1/assignments?select=id,status,created_at,consult_requests(id,service_type,topic,summary,risk_flag,source,status,created_at),providers(display_name,title)&order=created_at.desc${filter}`
+    );
     if (result.error) return json({ error: "分配加载失败，请稍后再试。" }, result.status);
     return json({ assignments: result.data || [] });
   }
-  const id = pathname.split("/").at(-1);
+
+  const pathParts = pathname.split("/");
+  const id = pathParts[pathParts.length - 1];
   const payload = await request.json().catch(() => ({}));
-  const nextStatus = ["assigned", "contacted", "completed", "unreachable"].includes(payload.status) ? payload.status : "contacted";
-  const result = await supabaseFetch(env, `/rest/v1/assignments?id=eq.${id}`, {
+  const nextStatus = ["assigned", "contacted", "completed", "unreachable"].includes(payload.status)
+    ? payload.status
+    : "contacted";
+  const result = await supabaseFetch(env, `/rest/v1/assignments?id=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",
     body: JSON.stringify({ status: nextStatus })
   });
   if (result.error) return json({ error: "状态更新失败，请稍后再试。" }, result.status);
-  return json({ assignment: result.data?.[0] });
+  return json({ assignment: (result.data && result.data[0]) || null });
 }
 
 export default {
@@ -515,11 +552,15 @@ export default {
       if (pathname === "/api/mood-wall") return handleMoodWall(request, env, user);
       if (pathname === "/api/island-logs" && request.method === "GET") return handleIslandLogs(env);
       if (pathname === "/api/stats" && request.method === "GET") return handleStats(env);
-      if (pathname === "/api/admin/requests" || pathname.startsWith("/api/admin/requests/")) return handleAdminRequests(request, env, user, pathname);
-      if (pathname === "/api/provider/assignments" || pathname.startsWith("/api/provider/assignments/")) return handleProviderAssignments(request, env, user, pathname);
-      return json({ error: "Not found" }, 404);
+      if (pathname === "/api/admin/requests" || pathname.startsWith("/api/admin/requests/")) {
+        return handleAdminRequests(request, env, user, pathname);
+      }
+      if (pathname === "/api/provider/assignments" || pathname.startsWith("/api/provider/assignments/")) {
+        return handleProviderAssignments(request, env, user, pathname);
+      }
+      return json({ error: "没有找到这个接口。" }, 404);
     } catch (_error) {
-      return json({ error: "Server error" }, 500);
+      return json({ error: "服务器暂时开小差了，请稍后再试。" }, 500);
     }
   }
 };

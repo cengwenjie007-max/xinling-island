@@ -63,4 +63,4 @@ window.XINLING_BACKEND_CONFIG = {
 - 页面显示“本地陪伴模式”通常是 `backend-config.js` 的 `apiBaseUrl` 为空。
 - Worker 可打开但 AI 不回复时，检查 Workers AI binding 是否启用，binding 名称是否为 `AI`。
 - 健康检查地址：`/api/health` 应返回 `{ "ok": true }`。
-- 当前默认模型是 `@cf/meta/llama-3.1-8b-instruct`，可在 `companion-worker.js` 顶部 `MODEL` 常量中调整。
+- 当前默认模型是 `@cf/meta/llama-3.2-3b-instruct`，可在 `companion-worker.js` 顶部 `MODEL` 常量中调整。
