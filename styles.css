@@ -10,6 +10,13 @@
   --warm: #e9b86d;
   --rose: #b95d5d;
   --paper: rgba(255, 252, 245, 0.86);
+  --panel-text: #16313d;
+  --panel-muted: #425862;
+  --text-on-dark: #ffffff;
+  --text-on-dark-muted: rgba(241, 250, 252, 0.86);
+  --text-on-dark-soft: rgba(241, 250, 252, 0.78);
+  --glass-light: rgba(255, 253, 248, 0.86);
+  --glass-deep: rgba(5, 34, 48, 0.74);
 }
 
 * {
@@ -3864,5 +3871,559 @@ body {
 
   .mood-wall-shore {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Readability and page rhythm pass. Keep this block last so it normalizes older section styles. */
+.site-header {
+  top: 14px;
+  left: 50%;
+  width: min(1180px, calc(100% - 28px));
+  padding: 12px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  color: var(--text-on-dark);
+  background: rgba(5, 34, 48, 0.74);
+  box-shadow: 0 18px 48px rgba(3, 18, 28, 0.22);
+  backdrop-filter: blur(18px);
+  mix-blend-mode: normal;
+  transform: translateX(-50%);
+}
+
+.brand,
+.site-nav,
+.nav-link {
+  text-shadow: 0 1px 10px rgba(0, 16, 25, 0.28);
+}
+
+.site-nav {
+  gap: clamp(14px, 2.2vw, 30px);
+  font-size: 13px;
+}
+
+.nav-link {
+  border-bottom-color: rgba(255, 255, 255, 0.64);
+}
+
+.intro,
+.guide,
+.mood-lab,
+.island-map,
+.help,
+.visual-story {
+  color: var(--panel-text);
+}
+
+.intro p:not(.section-label),
+.mood-copy p:not(.section-label),
+.story-text,
+.visual-story p,
+.help-card p,
+.map-detail p,
+.portal-card p,
+.test-card p,
+.stage-empty p,
+.active-test p,
+.result-panel p,
+.question-block p {
+  color: var(--panel-muted);
+}
+
+.section-label {
+  color: #08758d;
+  font-weight: 950;
+}
+
+.growth,
+.method,
+.companion,
+.community,
+.night-harbor {
+  color: var(--text-on-dark);
+}
+
+.growth p:not(.section-label),
+.method p:not(.section-label),
+.companion-copy p,
+.community p:not(.section-label),
+.night-copy p,
+.received-bottle,
+.mood-pulse,
+.island-logs,
+.treehole-list p,
+.goodnight-card p,
+.ambient-dock p,
+.sound-unlock-card p {
+  color: var(--text-on-dark-muted);
+}
+
+.growth-stats p,
+.growth-progress > div:first-child,
+.badge-shelf > p,
+.stats-source,
+.island-stats p,
+.community-status,
+.mood-pulse-row span,
+.mood-pulse-row b,
+.form-hint.dark,
+.bottle-panel textarea::placeholder,
+.treehole-panel textarea::placeholder {
+  color: var(--text-on-dark-soft);
+}
+
+.method-list p,
+.bottle-list article,
+.island-logs p,
+.received-bottle p,
+.treehole-list p {
+  color: rgba(247, 252, 253, 0.88);
+}
+
+.mood-console,
+.test-catalog,
+.test-stage,
+.stage-empty,
+.active-test,
+.result-panel,
+.question-block,
+.test-card,
+.portal-card,
+.auth-panel,
+.booking-panel,
+.help-card,
+.map-detail,
+.mood-tide-card,
+.mood-chart,
+.mood-history,
+.mood-wall {
+  color: var(--panel-text);
+  background-color: var(--glass-light);
+}
+
+.sprite-card {
+  color: var(--panel-text);
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.9), rgba(226, 248, 246, 0.82));
+}
+
+.sprite-card p,
+.sprite-message,
+.sprite-status,
+.mood-note-list p,
+.mood-wall-post p,
+.ai-insight,
+.form-hint,
+.safety-note,
+.booking-summary {
+  color: var(--panel-muted);
+}
+
+textarea,
+input[type="text"],
+.portal-card input,
+.portal-card select,
+.mood-console textarea,
+.chat-input-row input,
+.choice-grid span {
+  color: var(--panel-text);
+  background-color: rgba(255, 253, 248, 0.9);
+}
+
+textarea::placeholder,
+input[type="text"]::placeholder {
+  color: rgba(66, 88, 98, 0.72);
+}
+
+.public-tide textarea,
+.bottle-panel textarea,
+.treehole-panel textarea {
+  color: var(--text-on-dark);
+  background: rgba(3, 24, 36, 0.34);
+}
+
+.public-tide textarea::placeholder,
+.bottle-panel textarea::placeholder,
+.treehole-panel textarea::placeholder {
+  color: rgba(241, 250, 252, 0.72);
+}
+
+.safety-note {
+  background: rgba(255, 253, 248, 0.88);
+}
+
+.solid-button,
+.hero-cta,
+.ghost-button,
+.booking-option,
+.mood-button,
+.ritual-options button,
+.ritual-cabin-button {
+  font-weight: 950;
+}
+
+.intro,
+.guide,
+.growth,
+.mood-lab,
+.island-map,
+.method,
+.companion,
+.community,
+.night-harbor,
+.help {
+  padding-top: clamp(58px, 8vw, 104px);
+  padding-bottom: clamp(58px, 8vw, 104px);
+}
+
+.growth,
+.community,
+.night-harbor,
+.visual-story {
+  min-height: auto;
+}
+
+.visual-story {
+  min-height: 34vh;
+}
+
+.visual-story article {
+  min-height: 260px;
+}
+
+.visual-story span {
+  margin-bottom: 28px;
+  opacity: 0.28;
+}
+
+.growth h2,
+.community h2,
+.night-copy h2,
+.visual-story h3 {
+  text-wrap: balance;
+}
+
+.growth-panel,
+.bottle-panel,
+.treehole-panel {
+  max-height: none;
+}
+
+.bottle-list,
+.island-logs,
+.treehole-list,
+.mood-history,
+.mood-wall {
+  max-height: min(52svh, 520px);
+  overflow: auto;
+  padding-right: 4px;
+  scrollbar-color: rgba(103, 150, 160, 0.58) transparent;
+}
+
+.mood-console {
+  gap: 16px;
+}
+
+.mood-lab,
+.island-map,
+.companion,
+.community,
+.help {
+  gap: clamp(26px, 5vw, 72px);
+}
+
+.mood-console,
+.chat-box,
+.bottle-panel,
+.booking-panel {
+  padding: clamp(20px, 3vw, 34px);
+}
+
+.mood-tide-card,
+.mood-chart,
+.mood-wall,
+.help-card,
+.booking-panel,
+.action-card {
+  padding: clamp(18px, 2.4vw, 28px);
+}
+
+.mood-chart {
+  min-height: auto;
+}
+
+.mood-tide-line {
+  grid-template-columns: repeat(7, minmax(56px, 1fr));
+}
+
+.mood-shell {
+  min-height: calc(54px + min(var(--energy, 42px), 42px));
+  padding: 10px 8px;
+}
+
+.mood-history,
+.mood-wall {
+  max-height: 360px;
+}
+
+.mood-wall-shore {
+  grid-template-columns: 1fr;
+}
+
+.map-board {
+  min-height: clamp(520px, 52vw, 680px);
+}
+
+.map-detail h3 {
+  font-size: clamp(30px, 3.4vw, 46px);
+}
+
+.chat-box {
+  gap: 14px;
+}
+
+.sprite-stage,
+.sprite-stage canvas {
+  min-height: 220px;
+  height: 220px;
+}
+
+.community .island-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.community .bottle-list,
+.community .island-logs {
+  max-height: 300px;
+}
+
+.help {
+  min-height: auto;
+}
+
+.help .story-text {
+  margin-bottom: 28px;
+}
+
+.help-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 18px;
+}
+
+.help-card {
+  min-height: 150px;
+}
+
+.booking-panel {
+  margin-top: 18px;
+}
+
+.booking-panel h3 {
+  font-size: clamp(26px, 3.2vw, 44px);
+}
+
+.help-actions {
+  margin-top: 20px;
+}
+
+@media (min-width: 861px) {
+  .mood-console {
+    max-height: 980px;
+    overflow: auto;
+    scrollbar-color: rgba(103, 150, 160, 0.58) transparent;
+  }
+
+  .bottle-panel {
+    max-height: 920px;
+    overflow: auto;
+    scrollbar-color: rgba(255, 255, 255, 0.42) transparent;
+  }
+
+  .treehole-panel {
+    max-height: 660px;
+    overflow: auto;
+    scrollbar-color: rgba(255, 255, 255, 0.42) transparent;
+  }
+}
+
+.help h2 {
+  font-size: clamp(34px, 5.4vw, 72px);
+}
+
+.help .section-label:not(:first-child) {
+  margin-top: 10px;
+}
+
+.help .story-text {
+  max-width: 780px;
+  font-size: clamp(17px, 1.55vw, 21px);
+}
+
+.help-card p,
+.booking-panel p,
+.booking-summary {
+  line-height: 1.66;
+}
+
+.booking-options {
+  gap: 8px;
+}
+
+.booking-option {
+  min-height: 46px;
+}
+
+.test-catalog,
+.test-stage {
+  background-color: rgba(255, 253, 248, 0.86);
+}
+
+.tests-hero-copy {
+  background: linear-gradient(135deg, rgba(7, 27, 39, 0.72), rgba(7, 76, 86, 0.38));
+}
+
+.tests-hero p:not(.eyebrow),
+.tests-hero .notice-card {
+  color: var(--text-on-dark-muted);
+}
+
+.mobile-quick-nav {
+  border-color: rgba(5, 34, 48, 0.18);
+  background: rgba(255, 253, 248, 0.94);
+}
+
+.mobile-quick-nav a {
+  color: var(--panel-text);
+}
+
+@media (max-width: 860px) {
+  .site-header {
+    top: 10px;
+    grid-template-columns: 1fr auto;
+    width: calc(100% - 20px);
+    padding: 10px 14px;
+  }
+
+  .brand,
+  .nav-link {
+    font-size: 13px;
+  }
+
+  .intro,
+  .guide,
+  .growth,
+  .mood-lab,
+  .island-map,
+  .method,
+  .companion,
+  .community,
+  .night-harbor,
+  .help {
+    padding-top: 56px;
+    padding-bottom: 72px;
+  }
+
+  .bottle-list,
+  .island-logs,
+  .treehole-list,
+  .mood-history,
+  .mood-wall {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .visual-story article {
+    min-height: 220px;
+  }
+
+  .hero,
+  .growth-panel,
+  .mood-console,
+  .map-board,
+  .chat-box,
+  .bottle-panel,
+  .treehole-panel,
+  .booking-panel {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .growth-panel *,
+  .mood-console *,
+  .map-board *,
+  .chat-box * {
+    min-width: 0;
+  }
+
+  .growth-stats article::after {
+    display: none;
+  }
+
+  .growth-panel,
+  .mood-console {
+    padding: 20px;
+  }
+
+  .growth-stats,
+  .community .island-stats,
+  .mood-options,
+  .booking-options {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .growth-stats article {
+    min-width: 0;
+    min-height: 108px;
+  }
+
+  .growth-stats span {
+    font-size: clamp(28px, 10vw, 40px);
+  }
+
+  .mood-button {
+    min-width: 0;
+    min-height: 54px;
+    padding-inline: 12px;
+  }
+
+  .map-layout {
+    gap: 18px;
+  }
+
+  .map-board {
+    min-height: 520px;
+  }
+
+  .map-point {
+    max-width: 128px;
+    padding: 8px 10px;
+  }
+
+  .map-point strong,
+  .map-point small {
+    overflow-wrap: anywhere;
+  }
+
+  .sprite-orb {
+    flex-basis: 56px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .sprite-orb::before,
+  .sprite-orb::after {
+    width: 18px;
+  }
+
+  .sprite-orb::before {
+    left: -8px;
+  }
+
+  .sprite-orb::after {
+    right: -8px;
+  }
+
+  .sprite-orb i {
+    width: 62px;
   }
 }
