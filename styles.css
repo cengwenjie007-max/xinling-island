@@ -4427,3 +4427,147 @@ input[type="text"]::placeholder {
     width: 62px;
   }
 }
+
+/* Starlight plaza repair: keep the drift-bottle area solid and readable. */
+.community .bottle-panel {
+  position: relative;
+  isolation: isolate;
+  color: #f7fcfd;
+  border: 1px solid rgba(159, 230, 226, 0.3);
+  background:
+    radial-gradient(circle at 18% 10%, rgba(133, 248, 230, 0.22), transparent 34%),
+    radial-gradient(circle at 85% 8%, rgba(248, 203, 127, 0.18), transparent 30%),
+    linear-gradient(145deg, rgba(4, 31, 47, 0.94), rgba(6, 55, 68, 0.9) 54%, rgba(5, 28, 43, 0.96));
+  box-shadow: 0 34px 80px rgba(2, 17, 27, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(18px);
+}
+
+.community .bottle-panel::before {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 12% 22%, rgba(255, 255, 255, 0.2) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 18%, rgba(255, 230, 165, 0.32) 0 1px, transparent 2px),
+    radial-gradient(circle at 88% 58%, rgba(154, 247, 212, 0.26) 0 1px, transparent 2px);
+  opacity: 0.8;
+}
+
+.community .bottle-panel textarea {
+  color: #173240;
+  border-color: rgba(166, 220, 218, 0.62);
+  background: rgba(255, 253, 248, 0.94);
+  box-shadow: inset 0 2px 18px rgba(6, 36, 48, 0.08);
+}
+
+.community .bottle-panel textarea::placeholder {
+  color: rgba(44, 71, 82, 0.7);
+}
+
+.community .bottle-panel .form-hint,
+.community .community-status {
+  color: rgba(237, 250, 250, 0.86);
+}
+
+.community .community-status[data-tone="alert"] {
+  color: #ffe2a8;
+}
+
+.community .received-bottle,
+.community .mood-pulse,
+.community .island-logs,
+.community .bottle-list article {
+  color: #173240;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  background: linear-gradient(135deg, rgba(255, 253, 248, 0.95), rgba(232, 249, 246, 0.9));
+  box-shadow: 0 18px 40px rgba(2, 22, 32, 0.18);
+  backdrop-filter: blur(10px);
+}
+
+.community .received-bottle,
+.community .mood-pulse,
+.community .island-logs {
+  border-left: 4px solid rgba(248, 203, 127, 0.92);
+}
+
+.community .received-bottle span,
+.community .mood-pulse > strong,
+.community .island-logs > strong {
+  color: #0b2f43;
+  letter-spacing: 0.01em;
+}
+
+.community .received-bottle p,
+.community .island-logs p,
+.community .bottle-list article {
+  color: #304d58;
+}
+
+.community .island-logs span,
+.community .bottle-list span {
+  color: #c17617;
+  font-weight: 950;
+}
+
+.community .mood-pulse-row {
+  grid-template-columns: minmax(82px, auto) minmax(120px, 1fr) minmax(48px, auto);
+  padding: 6px 0;
+  border-top: 1px solid rgba(12, 73, 88, 0.1);
+}
+
+.community .mood-pulse-row:first-of-type {
+  border-top: 0;
+}
+
+.community .mood-pulse-row span,
+.community .mood-pulse-row b {
+  color: #234856;
+}
+
+.community .mood-pulse-track {
+  height: 10px;
+  background: rgba(8, 61, 78, 0.13);
+  box-shadow: inset 0 1px 3px rgba(5, 32, 43, 0.1);
+}
+
+.community .mood-pulse-track i {
+  min-width: 8px;
+  background: linear-gradient(90deg, #55d8c7, #f5d37d);
+  box-shadow: 0 0 14px rgba(85, 216, 199, 0.28);
+}
+
+.community .bottle-list {
+  display: grid;
+  gap: 12px;
+}
+
+.community .bottle-list article {
+  padding: 14px 16px;
+  border-left: 4px solid rgba(85, 216, 199, 0.85);
+}
+
+.community .community-actions .ghost-button {
+  color: #f6fbfc;
+  border-color: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.community .community-actions .ghost-button:hover,
+.community .community-actions .ghost-button:focus-visible {
+  color: #0b2f43;
+  background: rgba(255, 253, 248, 0.92);
+}
+
+@media (max-width: 860px) {
+  .community .bottle-panel {
+    padding: 20px;
+  }
+
+  .community .mood-pulse-row {
+    grid-template-columns: minmax(78px, auto) 1fr minmax(42px, auto);
+    gap: 8px;
+  }
+}
