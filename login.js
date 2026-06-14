@@ -11,7 +11,6 @@ const roleLabels = {
   admin: "管理员"
 };
 
-let currentProfile = null;
 let canBootstrap = false;
 
 function setStatus(message) {
@@ -45,7 +44,6 @@ function createActionLink(label, href) {
 }
 
 function renderSession(profile, user) {
-  currentProfile = profile || null;
   sessionActions.replaceChildren();
 
   if (!user) {
@@ -80,7 +78,7 @@ async function refreshAuthStatus() {
     const user = await XinlingBackend.getUser();
     bootstrapPanel.hidden = true;
     renderSession(null, user);
-    setStatus(user ? "已登录，但 Worker 地址尚未配置；管理员初始化和云端 API 功能暂不可用。" : "Supabase 已配置，但 Worker 地址尚未配置；客户可注册登录，管理员初始化暂不可用。");
+    setStatus(user ? "已登录，但 Worker 地址尚未配置；云端 API 功能暂不可用。" : "Supabase 已配置，但 Worker 地址尚未配置；客户可注册登录，后台入口暂不可用。");
     return;
   }
 
@@ -101,8 +99,9 @@ async function refreshAuthStatus() {
       setStatus(`已登录：${auth.user.email || "当前账号"}，身份为${roleText}。`);
       return;
     }
-    setStatus(canBootstrap ? "系统还没有管理员。你可以先初始化管理员，客户注册仍会保留。" : "尚未登录。客户可注册普通账号，管理员入口已关闭。");
+    setStatus(canBootstrap ? "系统还没有管理员。你可以先初始化管理员，客户注册仍会保留。" : "尚未登录。客户可注册普通账号，后台入口仅在对应角色登录后显示。");
   } catch (_error) {
+    bootstrapPanel.hidden = true;
     setStatus("暂时无法连接后端。请检查 backend-config.js、Worker 地址和 Supabase 配置。");
   }
 }

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>心灵岛屿 | 登录注册</title>
+    <title>心灵岛屿 | 客户登录注册</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="backend-config.js" defer></script>
@@ -16,8 +16,6 @@
       <nav class="site-nav" aria-label="账号导航">
         <a href="index.html">首页</a>
         <a href="tests.html">心理测试</a>
-        <a href="provider.html">服务者后台</a>
-        <a href="admin.html">管理员后台</a>
       </nav>
       <a class="nav-link" href="index.html">返回</a>
     </header>
@@ -27,8 +25,7 @@
         <p class="section-label">ACCOUNT</p>
         <h1 id="login-title">进入你的心灵岛屿</h1>
         <p>
-          客户可以注册普通账号，保存自己的情绪记录、测试报告和预约线索。管理员账号只允许第一次初始化，
-          初始化完成后入口会自动关闭。
+          客户可以注册普通账号，保存自己的情绪记录、测试报告和预约线索。后台入口只会在管理员或服务者账号登录后显示。
         </p>
         <p class="booking-summary" id="auth-status" aria-live="polite">正在检查后端配置...</p>
         <section class="session-panel" id="session-panel" hidden>
@@ -41,7 +38,7 @@
         </section>
       </section>
 
-      <section class="auth-grid" aria-label="登录注册入口">
+      <section class="auth-grid" aria-label="客户登录注册入口">
         <article class="portal-card auth-panel">
           <p class="section-label">CLIENT LOGIN</p>
           <h2>客户登录</h2>
@@ -60,7 +57,7 @@
         <article class="portal-card auth-panel">
           <p class="section-label">CLIENT REGISTER</p>
           <h2>客户注册</h2>
-          <p>客户注册后默认是普通用户，不能进入管理员后台。</p>
+          <p>客户注册后默认是普通用户，不能进入管理员后台或服务者后台。</p>
           <label>
             昵称
             <input id="register-nickname" type="text" maxlength="30" autocomplete="nickname" placeholder="例如：海边来客" />
@@ -81,8 +78,7 @@
           <p class="section-label">FIRST ADMIN</p>
           <h2>管理员初始化</h2>
           <p>
-            仅在系统没有任何管理员时开放。请只用你自己的邮箱创建第一个管理员账号，
-            不要把管理员密码写进网页或发给别人。
+            仅在系统没有任何管理员时开放。请只用你自己的邮箱创建第一个管理员账号，不要把管理员密码写进网页或发给别人。
           </p>
           <label>
             管理员昵称
